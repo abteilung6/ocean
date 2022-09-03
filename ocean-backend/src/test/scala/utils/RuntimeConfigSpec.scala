@@ -1,7 +1,7 @@
 package org.abteilung6.ocean
 package utils
 
-import com.typesafe.config.{Config, ConfigException, ConfigFactory}
+import com.typesafe.config.{ Config, ConfigException, ConfigFactory }
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -17,7 +17,7 @@ class RuntimeConfigSpec extends AnyWordSpec with Matchers {
            |}
            |""".stripMargin
       val config: Config = ConfigFactory.parseString(applicationConfig)
-      val runtimeConfig = new RuntimeConfig(config)
+      val runtimeConfig = RuntimeConfig.load(config)
 
       runtimeConfig.serverBindingConfig.interface shouldEqual "localhost"
       runtimeConfig.serverBindingConfig.port shouldEqual 8080
@@ -30,7 +30,7 @@ class RuntimeConfigSpec extends AnyWordSpec with Matchers {
            |}
            |""".stripMargin
       val config: Config = ConfigFactory.parseString(applicationConfig)
-      val runtimeConfig = new RuntimeConfig(config)
+      val runtimeConfig = RuntimeConfig.load(config)
 
       assertThrows[ConfigException] {
         runtimeConfig.serverBindingConfig

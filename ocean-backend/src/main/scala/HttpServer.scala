@@ -5,17 +5,15 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
-import com.typesafe.config.ConfigFactory
 import scala.concurrent.ExecutionContextExecutor
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 import utils.RuntimeConfig
 
 object HttpServer extends App {
 
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "http-server-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
-  val config = ConfigFactory.load()
-  val serverBindingConfig = new RuntimeConfig(config).serverBindingConfig
+  val serverBindingConfig = RuntimeConfig.load().serverBindingConfig
 
   val route =
     path("") {

@@ -9,3 +9,7 @@ lazy val root = (project in file("."))
     idePackagePrefix := Some("org.abteilung6.ocean"),
     libraryDependencies ++= akkaDependencies ++ logDependencies ++ testDependencies
   )
+
+addCommandAlias("format", "scalafmt; Test / scalafmt")
+addCommandAlias("formatCheck", "scalafmtCheck; Test / scalafmtCheck")
+addCommandAlias("cov", "clean; coverage; test; coverageReport;")
