@@ -12,3 +12,4 @@ lazy val root = (project in file("."))
 
 addCommandAlias("format", "scalafmt; Test / scalafmt")
 addCommandAlias("formatCheck", "scalafmtCheck; Test / scalafmtCheck")
+addCommandAlias("cov", "clean; coverage; test; coverageReport;")
