@@ -7,5 +7,5 @@ lazy val root = (project in file("."))
   .settings(
     name := "ocean-backend",
     idePackagePrefix := Some("org.abteilung6.ocean"),
-    libraryDependencies ++= akkaDependencies ++ logDependencies
+    libraryDependencies ++= akkaDependencies ++ logDependencies ++ testDependencies
   )
