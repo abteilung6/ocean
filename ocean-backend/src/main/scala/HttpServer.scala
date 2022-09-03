@@ -7,7 +7,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.ExecutionContextExecutor
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 import utils.RuntimeConfig
 
 object HttpServer extends App {

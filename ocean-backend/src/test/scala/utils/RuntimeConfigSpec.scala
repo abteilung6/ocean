@@ -1,7 +1,7 @@
 package org.abteilung6.ocean
 package utils
 
-import com.typesafe.config.{Config, ConfigException, ConfigFactory}
+import com.typesafe.config.{ Config, ConfigException, ConfigFactory }
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
