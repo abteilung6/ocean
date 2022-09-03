@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "**"
+  pull_request:
+    branches:
+      - main
+
+defaults:
+  run:
+    working-directory: ./ocean-backend
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v2
+
+      - name: Setup Scala
+        uses: olafurpg/setup-scala@v11
+        with:
+          java-version: adopt@1.11
+
+      - name: Lint with Scalafmt
+        run: sbt formatCheck
+
+      - name: Check dependencies
+        run: sbt clean compile
+
+      - name: Run tests with coverage report
+        run: sbt cov
+
+      - name: Upload coverage data to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: True
