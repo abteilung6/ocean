@@ -3,28 +3,21 @@ package org.abteilung6.ocean
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Directives._
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.{ Failure, Success }
 import utils.RuntimeConfig
+import controllers.ControllerModule
 
-object HttpServer extends App {
+object OceanApp extends App {
 
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "http-server-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
   val serverBindingConfig = RuntimeConfig.load().serverBindingConfig
-
-  val route =
-    path("") {
-      get {
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "hello world"))
-      }
-    }
+  val module = new ControllerModule()
 
   val bindingFuture = Http()
     .newServerAt(serverBindingConfig.interface, serverBindingConfig.port)
-    .bind(route)
+    .bind(module.routes)
 
   bindingFuture.onComplete {
     case Success(binding) =>
