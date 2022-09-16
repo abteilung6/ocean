@@ -7,7 +7,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "ocean-backend",
     idePackagePrefix := Some("org.abteilung6.ocean"),
-    libraryDependencies ++= akkaDependencies ++ logDependencies ++ testDependencies
+    libraryDependencies ++= coreDependencies ++ akkaDependencies ++ logDependencies ++ testDependencies
   )
 
 addCommandAlias("format", "scalafmt; Test / scalafmt")
