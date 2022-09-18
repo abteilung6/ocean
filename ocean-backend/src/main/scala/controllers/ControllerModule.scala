@@ -3,8 +3,10 @@ package controllers
 
 import akka.http.scaladsl.server.Route
 import services.ServiceModule
+import utils.RuntimeConfig
 
-class ControllerModule extends ServiceModule {
+class ControllerModule(runtimeConfig: RuntimeConfig) extends ServiceModule {
+
   import com.softwaremill.macwire._
 
   lazy val authController: AuthController = wire[AuthController]
