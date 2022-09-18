@@ -10,7 +10,7 @@ import services.AuthService
 class AuthController(authService: AuthService) {
 
   private val login: Route = path("login") {
-    authService.bar()
+    authService.authenticate()
     complete(StatusCodes.OK)
   }
 

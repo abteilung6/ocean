@@ -1,8 +1,10 @@
 package org.abteilung6.ocean
 package services
 
-class AuthService() {
+class AuthService(directoryService: DirectoryService) {
 
-  def bar(): Boolean =
+  def authenticate(): Boolean = {
+    print(directoryService.authenticate("user01", "password1"))
     true
+  }
 }

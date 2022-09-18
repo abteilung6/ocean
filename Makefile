@@ -1,9 +1,10 @@
-CONTAINER_DEV_PREFIX = "ocean_dev_"
+CONTAINER_DEV_PREFIX = "ocean_dev_container_"
+ORCHESTRATION_PATH = "orchestration/"
 
-run-dev-ldap: ;@docker compose run --detach --name "${CONTAINER_DEV_PREFIX}openldap" openldap;
+deploy-dev: ;@docker compose -f "${ORCHESTRATION_PATH}docker-compose.dev.yml" up --detach;
+
+teardown-dev: ;@docker compose -f "${ORCHESTRATION_PATH}docker-compose.dev.yml" down;
 
 monitor-dev: ;@docker container ls | grep "${CONTAINER_DEV_PREFIX}";
 
-teardown-dev: ;@docker compose down;
-
-.PHONY: run-dev-ldap monitor-dev teardown-dev
+.PHONY: deploy-dev teardown-dev monitor-dev
