@@ -16,6 +16,13 @@ final case class DirectoryConfig(
   userRoot: String
 ) extends ConfigCatalog
 
+final case class FlywayConfig(
+  url: String,
+  user: String,
+  password: String,
+  locations: String
+)
+
 class RuntimeConfig(val config: Config) {
 
   lazy val serverBindingConfig: ServerBindingConfig = {
@@ -35,6 +42,16 @@ class RuntimeConfig(val config: Config) {
       _config.getBoolean("useSsl"),
       _config.getString("name"),
       _config.getString("userRoot")
+    )
+  }
+
+  lazy val flywayConfig: FlywayConfig = {
+    val _config = config.getConfig("flyway")
+    FlywayConfig(
+      _config.getString("url"),
+      _config.getString("user"),
+      _config.getString("password"),
+      _config.getString("locations")
     )
   }
 }

@@ -7,9 +7,14 @@ lazy val root = (project in file("."))
   .settings(
     name := "ocean-backend",
     idePackagePrefix := Some("org.abteilung6.ocean"),
-    libraryDependencies ++= coreDependencies ++ akkaDependencies ++ logDependencies ++ testDependencies
+    libraryDependencies ++= coreDependencies ++ akkaDependencies ++ logDependencies ++ testDependencies,
+    fullRunTask(runMigrate, Compile, "org.abteilung6.ocean.db.DBMigrateCommand"),
+    fork / runMigrate := true
   )
+
+lazy val runMigrate = taskKey[Unit]("Migrates the database schema.")
 
 addCommandAlias("format", "scalafmt; Test / scalafmt")
 addCommandAlias("formatCheck", "scalafmtCheck; Test / scalafmtCheck")
 addCommandAlias("cov", "clean; coverage; test; coverageReport;")
+addCommandAlias("run-db-migrate", "runMigrate")
