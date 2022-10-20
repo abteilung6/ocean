@@ -62,7 +62,7 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
 
   val accounts = TableQuery[AccountTable]
 
-  def getUserByUsername(username: String): Future[Option[Account]] = db.run(
+  def getAccountByUsername(username: String): Future[Option[Account]] = db.run(
     accounts.filter(_.username === username).result.headOption
   )
 

@@ -23,6 +23,12 @@ final case class FlywayConfig(
   locations: String
 )
 
+final case class JwtConfig(
+  key: String,
+  accessExpirationTimeInSeconds: Long,
+  refreshExpirationTimeInSeconds: Long
+)
+
 class RuntimeConfig(val config: Config) {
 
   lazy val serverBindingConfig: ServerBindingConfig = {
@@ -52,6 +58,15 @@ class RuntimeConfig(val config: Config) {
       _config.getString("user"),
       _config.getString("password"),
       _config.getString("locations")
+    )
+  }
+
+  lazy val jwtConfig: JwtConfig = {
+    val _config = config.getConfig("jwt")
+    JwtConfig(
+      _config.getString("key"),
+      _config.getLong("accessExpirationTimeInSeconds"),
+      _config.getLong("refreshExpirationTimeInSeconds")
     )
   }
 }

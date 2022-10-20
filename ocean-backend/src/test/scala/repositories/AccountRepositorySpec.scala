@@ -25,7 +25,7 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
     Database.forURL(connectionString, driver = "org.postgresql.ds.PGSimpleDataSource")
 
   "addAccount" should {
-    "creates an user" in {
+    "creates an account" in {
       val dummyAccount = getDummyAccount(id = 1)
       val database = getDatabase()
       val accountRepository = new AccountRepository(Some(database))
@@ -37,15 +37,15 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
     }
   }
 
-  "getUserByUsername" should {
-    "return an user by username" in {
+  "getAccountByUsername" should {
+    "return an account by username" in {
       val database = getDatabase()
       val accountRepository = new AccountRepository(Some(database))
       val dummyAccount = getDummyAccount(id = 1)
 
       val result = for {
         _ <- accountRepository.addAccount(dummyAccount)
-        byUsername <- accountRepository.getUserByUsername(dummyAccount.username)
+        byUsername <- accountRepository.getAccountByUsername(dummyAccount.username)
       } yield byUsername
 
       result.map { optUser =>

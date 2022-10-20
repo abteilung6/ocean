@@ -3,11 +3,8 @@ package repositories.utils
 
 import db.DBMigrateCommand
 import utils.FlywayConfig
-
-import org.flywaydb.core.api.output.{ CleanResult, MigrateResult }
-
-import java.lang
-import java.sql.{ Connection, DriverManager, Timestamp }
+import org.flywaydb.core.api.output.MigrateResult
+import java.sql.{ Connection, DriverManager }
 
 class TestDatabase(databaseName: String = "defaultdb") {
 
