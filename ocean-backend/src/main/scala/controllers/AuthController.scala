@@ -2,48 +2,62 @@ package org.abteilung6.ocean
 package controllers
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Directives.path
 import akka.http.scaladsl.server.Route
 import services.AuthService
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
-import repositories.dto.auth.{ RefreshTokenRequest, SignInRequest }
+import repositories.dto.auth.{ AuthResponse, RefreshTokenRequest, SignInRequest }
 import repositories.dto.response.ResponseError
-import scala.util.{ Failure, Success }
+import scala.concurrent.Future
+import sttp.tapir._
+import sttp.tapir.server.akkahttp.AkkaHttpServerInterpreter
+import sttp.tapir.json.circe._
+import sttp.tapir.generic.auto._
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class AuthController(authService: AuthService) extends FailFastCirceSupport {
+class AuthController(authService: AuthService) extends BaseController with FailFastCirceSupport {
 
   import repositories.dto.auth.SignInRequest.Implicits._
   import repositories.dto.auth.AuthResponse.Implicits._
   import repositories.dto.auth.RefreshTokenRequest.Implicits._
   import repositories.dto.response.ResponseError.Implicits._
 
-  private val signIn: Route = path("signin") {
-    post {
-      entity(as[SignInRequest]) { request =>
-        onComplete(authService.authenticate(request.username, request.password)) {
-          case Success(authResponse) => complete(authResponse)
-          case Failure(AuthService.IncorrectCredentialsException(message)) =>
-            complete(StatusCodes.Unauthorized, ResponseError(message))
-          case Failure(AuthService.InternalError(message)) =>
-            complete(StatusCodes.InternalServerError, ResponseError(message))
-        }
-      }
-    }
-  }
+  val signInEndpoint: PublicEndpoint[SignInRequest, ResponseError, AuthResponse, Any] =
+    endpoint.post
+      .in("auth" / "signin")
+      .in(jsonBody[SignInRequest])
+      .errorOut(jsonBody[ResponseError])
+      .out(jsonBody[AuthResponse])
 
-  private val refreshToken: Route = path("refresh") {
-    post {
-      entity(as[RefreshTokenRequest]) { request =>
-        authService.refreshTokens(request.refreshToken) match {
-          case Some(authResponse) => complete(authResponse)
-          case None               => complete(StatusCodes.Unauthorized, ResponseError("Invalid refresh token"))
-        }
+  def signInLogic(signInRequest: SignInRequest): Future[Either[ResponseError, AuthResponse]] =
+    authService
+      .authenticate(signInRequest.username, signInRequest.password)
+      .map { authResponse: AuthResponse =>
+        Right(authResponse)
       }
-    }
-  }
+      .recover {
+        case AuthService.IncorrectCredentialsException(message) =>
+          Left(ResponseError(StatusCodes.Unauthorized.intValue, message))
+        case AuthService.InternalError(message) =>
+          Left(ResponseError(StatusCodes.InternalServerError.intValue, message))
+      }
 
-  val route: Route = pathPrefix("auth") {
-    signIn ~ refreshToken
-  }
+  val refreshTokenEndpoint: PublicEndpoint[RefreshTokenRequest, ResponseError, AuthResponse, Any] =
+    endpoint.post
+      .in("auth" / "refresh")
+      .in(jsonBody[RefreshTokenRequest])
+      .errorOut(jsonBody[ResponseError])
+      .out(jsonBody[AuthResponse])
+
+  def refreshTokenLogic(refreshTokenRequest: RefreshTokenRequest): Future[Either[ResponseError, AuthResponse]] =
+    authService.refreshTokens(refreshTokenRequest.refreshToken) match {
+      case Some(authResponse) => Future.successful(Right(authResponse))
+      case None => Future.successful(Left(ResponseError(StatusCodes.Unauthorized.intValue, "Invalid refresh token")))
+    }
+
+  val endpoints: List[AnyEndpoint] = List(signInEndpoint, refreshTokenEndpoint)
+
+  val route: Route =
+    AkkaHttpServerInterpreter().toRoute(
+      List(signInEndpoint.serverLogic(signInLogic), refreshTokenEndpoint.serverLogic(refreshTokenLogic))
+    )
 }

@@ -29,6 +29,11 @@ final case class JwtConfig(
   refreshExpirationTimeInSeconds: Long
 )
 
+final case class OpenAPIConfig(
+  title: String,
+  version: String
+)
+
 class RuntimeConfig(val config: Config) {
 
   lazy val serverBindingConfig: ServerBindingConfig = {
@@ -67,6 +72,14 @@ class RuntimeConfig(val config: Config) {
       _config.getString("key"),
       _config.getLong("accessExpirationTimeInSeconds"),
       _config.getLong("refreshExpirationTimeInSeconds")
+    )
+  }
+
+  lazy val openAPIConfig: OpenAPIConfig = {
+    val _config = config.getConfig("openapi")
+    OpenAPIConfig(
+      _config.getString("title"),
+      _config.getString("version")
     )
   }
 }
