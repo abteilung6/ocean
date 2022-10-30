@@ -3,6 +3,7 @@ package controllers
 
 import akka.http.scaladsl.server.Route
 import services.ServiceModule
+import sttp.tapir.AnyEndpoint
 import utils.RuntimeConfig
 
 class ControllerModule(runtimeConfig: RuntimeConfig) extends ServiceModule {
@@ -12,4 +13,6 @@ class ControllerModule(runtimeConfig: RuntimeConfig) extends ServiceModule {
   lazy val authController: AuthController = wire[AuthController]
 
   def routes: Route = authController.route
+
+  def endpoints: List[AnyEndpoint] = authController.endpoints
 }

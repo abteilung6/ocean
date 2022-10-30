@@ -15,7 +15,7 @@ import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.Future
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
-import org.abteilung6.ocean.repositories.dto.response.ResponseError
+import repositories.dto.response.ResponseError
 
 class AuthControllerSpec
     extends AnyWordSpec
@@ -55,8 +55,8 @@ class AuthControllerSpec
         .thenReturn(Future.failed(AuthService.IncorrectCredentialsException("foo")))
 
       Post("/auth/signin", httpEntity) ~> authController.route ~> check {
-        status shouldBe StatusCodes.Unauthorized
-        responseAs[ResponseError] shouldBe ResponseError("foo")
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ResponseError] shouldBe ResponseError(StatusCodes.Unauthorized.intValue, "foo")
       }
     }
   }
@@ -87,8 +87,8 @@ class AuthControllerSpec
       when(authServiceMock.refreshTokens(anyString())).thenReturn(None)
 
       Post("/auth/refresh", httpEntity) ~> authController.route ~> check {
-        status shouldBe StatusCodes.Unauthorized
-        responseAs[ResponseError] shouldBe ResponseError("Invalid refresh token")
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ResponseError] shouldBe ResponseError(StatusCodes.Unauthorized.intValue, "Invalid refresh token")
       }
     }
   }

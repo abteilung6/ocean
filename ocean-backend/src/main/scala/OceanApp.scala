@@ -3,10 +3,14 @@ package org.abteilung6.ocean
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
-import scala.concurrent.ExecutionContextExecutor
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.Directives._
+import scala.concurrent.{ ExecutionContextExecutor, Future }
 import scala.util.{ Failure, Success }
 import utils.RuntimeConfig
 import controllers.ControllerModule
+import sttp.tapir.server.akkahttp.AkkaHttpServerInterpreter
+import sttp.tapir.swagger.bundle.SwaggerInterpreter
 
 object OceanApp extends App {
 
@@ -14,11 +18,15 @@ object OceanApp extends App {
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
   val runtimeConfig = RuntimeConfig.load()
   val module = new ControllerModule(runtimeConfig)
+  val openAPIConfig = runtimeConfig.openAPIConfig
   val serverBindingConfig = runtimeConfig.serverBindingConfig
+  val swaggerEndpoints =
+    SwaggerInterpreter().fromEndpoints[Future](module.endpoints, openAPIConfig.title, openAPIConfig.version)
+  val swaggerRoute: Route = AkkaHttpServerInterpreter().toRoute(swaggerEndpoints)
 
   val bindingFuture = Http()
     .newServerAt(serverBindingConfig.interface, serverBindingConfig.port)
-    .bind(module.routes)
+    .bind(module.routes ~ swaggerRoute)
 
   bindingFuture.onComplete {
     case Success(binding) =>

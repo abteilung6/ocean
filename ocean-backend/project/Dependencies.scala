@@ -4,7 +4,7 @@ object Dependencies {
 
   object Version {
     val akkaVersion = "2.6.20"
-    val akkaHttpVersion = "10.2.9"
+    val akkaHttpVersion = "10.2.10"
     val akkaHttpCirceVersion = "1.39.2"
     val circeVersion = "0.14.3"
     val jwtCirceVersion = "9.1.1"
@@ -16,6 +16,7 @@ object Dependencies {
     val logbackVersion = "1.2.11"
     val scalaTestVersion = "3.2.13"
     val scalaMockitoVersion = "3.2.12.0"
+    val tapirVersion = "1.1.3"
   }
 
   val akkaActor = "com.typesafe.akka" %% "akka-actor-typed" % Version.akkaVersion
@@ -38,10 +39,15 @@ object Dependencies {
   val mockito = "org.scalatestplus" %% "mockito-4-5" % Version.scalaMockitoVersion
   val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % Version.akkaVersion
   val akkaHttpTestkit = "com.typesafe.akka" %% "akka-http-testkit" % Version.akkaHttpVersion
+  val tapir = "com.softwaremill.sttp.tapir" %% "tapir-core" % Version.tapirVersion
+  val tapirAkka = "com.softwaremill.sttp.tapir" %% "tapir-akka-http-server" % Version.tapirVersion
+  val tapirCirce = "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % Version.tapirVersion
+  val tapirSwagger = "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % Version.tapirVersion
 
   lazy val akkaDependencies: Seq[ModuleID] =
     Seq(akkaActor, akkaStream, akkaHttp, akkaHttpCirce, circeCore, circeGeneric, circeParser, jwtCirce)
-  lazy val coreDependencies: Seq[ModuleID] = Seq(macwire, directoryApi, slick, hikaricp, postgres, flyway, h2)
+  lazy val coreDependencies: Seq[ModuleID] =
+    Seq(macwire, directoryApi, slick, hikaricp, postgres, flyway, h2, tapir, tapirAkka, tapirCirce, tapirSwagger)
   lazy val logDependencies: Seq[ModuleID] = Seq(logback)
   lazy val testDependencies: Seq[ModuleID] = Seq(scalaTest, mockito, akkaStreamTestkit, akkaHttpTestkit)
 }
