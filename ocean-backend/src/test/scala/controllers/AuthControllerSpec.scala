@@ -4,7 +4,6 @@ package controllers
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import repositories.dto.auth.AuthResponse
 import services.AuthService
-
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.{ HttpEntity, StatusCodes }
 import org.mockito.ArgumentMatchers.anyString
@@ -12,7 +11,6 @@ import org.mockito.Mockito.when
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
-
 import scala.concurrent.Future
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import repositories.dto.response.ResponseError
