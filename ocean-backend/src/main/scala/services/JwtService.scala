@@ -54,4 +54,14 @@ class JwtService(runtimeConfig: RuntimeConfig) {
     )
     JwtCirce.encode(claim, key, algorithm)
   }
+
+  def decodeToken(accessToken: String, currentTimestamp: Long): Option[AccessTokenContent] = {
+    import io.circe.parser.decode
+    import io.circe.generic.auto._
+
+    val optClaim = JwtCirce.decode(accessToken, key, Seq(JwtAlgorithm.HS256)).toOption
+    optClaim
+      .filter(jwtClaim => jwtClaim.expiration.exists(_ >= currentTimestamp))
+      .flatMap(jwtClaim => decode[AccessTokenContent](jwtClaim.content).toOption)
+  }
 }

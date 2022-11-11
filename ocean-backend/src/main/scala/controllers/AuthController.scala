@@ -21,9 +21,11 @@ class AuthController(authService: AuthService) extends BaseController with FailF
   import repositories.dto.auth.RefreshTokenRequest.Implicits._
   import repositories.dto.response.ResponseError.Implicits._
 
+  override val basePath: String = "auth"
+
   val signInEndpoint: PublicEndpoint[SignInRequest, ResponseError, AuthResponse, Any] =
     endpoint.post
-      .in("auth" / "signin")
+      .in(basePath / "signin")
       .in(jsonBody[SignInRequest])
       .errorOut(jsonBody[ResponseError])
       .out(jsonBody[AuthResponse])
@@ -43,7 +45,7 @@ class AuthController(authService: AuthService) extends BaseController with FailF
 
   val refreshTokenEndpoint: PublicEndpoint[RefreshTokenRequest, ResponseError, AuthResponse, Any] =
     endpoint.post
-      .in("auth" / "refresh")
+      .in(basePath / "refresh")
       .in(jsonBody[RefreshTokenRequest])
       .errorOut(jsonBody[ResponseError])
       .out(jsonBody[AuthResponse])

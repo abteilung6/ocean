@@ -1,9 +1,9 @@
 package org.abteilung6.ocean
 package repositories.utils
 
-import repositories.Account
-import java.sql.Timestamp
-import java.time.LocalDateTime
+import repositories.dto.Account
+
+import java.time.Instant
 
 object TestAccountUtils {
 
@@ -14,9 +14,9 @@ object TestAccountUtils {
     firstname: String = "firstname1",
     lastname: String = "lastname2",
     employeeType: String = "student",
-    createdAt: Timestamp = Timestamp.valueOf(LocalDateTime.now()),
-    lastLoginAt: Option[Timestamp] = Some(Timestamp.valueOf(LocalDateTime.now())),
-    expiresAt: Option[Timestamp] = Some(Timestamp.valueOf(LocalDateTime.now()))
+    createdAt: Instant = Instant.now(),
+    lastLoginAt: Option[Instant] = Some(Instant.now()),
+    expiresAt: Option[Instant] = Some(Instant.now())
   ): Account =
     Account(id, username, email, firstname, lastname, employeeType, createdAt, lastLoginAt, expiresAt)
 }

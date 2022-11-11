@@ -1,24 +1,13 @@
 package org.abteilung6.ocean
 package repositories
 
+import repositories.dto.Account
 import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.ProvenShape
-
 import java.sql.Timestamp
+import java.time.Instant
 import scala.concurrent.Future
-
-case class Account(
-  id: Long,
-  username: String,
-  email: String,
-  firstname: String,
-  lastname: String,
-  employeeType: String,
-  createdAt: Timestamp,
-  lastLoginAt: Option[Timestamp],
-  expiresAt: Option[Timestamp]
-)
 
 class AccountRepository(patchDatabase: Option[Database] = None) {
 
@@ -26,6 +15,14 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
     case Some(value) => value
     case None        => Database.forConfig("postgres-internal")
   }
+
+  // Since we store an Instant as a Timestamp in postgres,
+  // we need to implicitly declare this conversion.
+  implicit val instantColumnType: BaseColumnType[Instant] =
+    MappedColumnType.base[Instant, Timestamp](
+      instant => Timestamp.from(instant),
+      ts => ts.toInstant
+    )
 
   class AccountTable(tag: Tag) extends Table[Account](tag, "accounts") {
     def accountId: Rep[Long] = column[Long]("account_id", O.PrimaryKey, O.AutoInc)
@@ -40,11 +37,11 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
 
     def employeeType: Rep[String] = column[String]("employee_type")
 
-    def createdAt: Rep[Timestamp] = column[Timestamp]("created_at")
+    def createdAt: Rep[Instant] = column[Instant]("created_at")
 
-    def lastLoginAt: Rep[Option[Timestamp]] = column[Option[Timestamp]]("last_login_at")
+    def lastLoginAt: Rep[Option[Instant]] = column[Option[Instant]]("last_login_at")
 
-    def expiresAt: Rep[Option[Timestamp]] = column[Option[Timestamp]]("expires_at")
+    def expiresAt: Rep[Option[Instant]] = column[Option[Instant]]("expires_at")
 
     def * : ProvenShape[Account] =
       (
@@ -64,6 +61,10 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
 
   def getAccountByUsername(username: String): Future[Option[Account]] = db.run(
     accounts.filter(_.username === username).result.headOption
+  )
+
+  def getAccountById(accountId: Long): Future[Option[Account]] = db.run(
+    accounts.filter(_.accountId === accountId).result.headOption
   )
 
   def addAccount(account: Account): Future[Account] = db.run(

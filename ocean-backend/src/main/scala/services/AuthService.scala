@@ -1,10 +1,10 @@
 package org.abteilung6.ocean
 package services
 
-import repositories.{ Account, AccountRepository }
+import repositories.AccountRepository
 import services.DirectoryService.UserEntry
 import repositories.dto.auth.{ AccessTokenContent, AuthResponse, RefreshTokenContent }
-import java.sql.Timestamp
+import repositories.dto.Account
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -53,7 +53,7 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
       userEntry.givenName,
       userEntry.name,
       userEntry.employeeType,
-      Timestamp.from(Instant.now),
+      Instant.now,
       None,
       None
     )

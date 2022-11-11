@@ -13,7 +13,7 @@ import java.time.Instant
 
 class JwtServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with TryValues {
 
-  def getJwtService: JwtService = {
+  private def getJwtService: JwtService = {
     val runtimeConfigMock = mock[RuntimeConfig]
     when(runtimeConfigMock.jwtConfig).thenReturn(JwtConfig("mockKey", 1_000, 10_000))
     new JwtService(runtimeConfigMock)
@@ -53,6 +53,26 @@ class JwtServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with Tr
         jwtService.obtainsTokens(AccessTokenContent(1), RefreshTokenContent(1), overdue).refreshToken
       val authResponse = jwtService.refreshTokens(oldRefreshToken, now)
       authResponse shouldBe None
+    }
+  }
+
+  "decodeToken" should {
+    val jwtService = getJwtService
+
+    "return access token content" in {
+      val accessTokenContent = AccessTokenContent(42)
+      val now = Instant.now.getEpochSecond
+      val accessToken = jwtService.obtainsTokens(accessTokenContent, RefreshTokenContent(42), now).accessToken
+
+      jwtService.decodeToken(accessToken, now) shouldBe Some(accessTokenContent)
+    }
+
+    "return None if access token is invalid" in {
+      val overdue = Instant.now.getEpochSecond - jwtService.refreshExpirationTimeInSeconds
+      val oldAccessToken =
+        jwtService.obtainsTokens(AccessTokenContent(42), RefreshTokenContent(42), overdue).accessToken
+
+      jwtService.decodeToken(oldAccessToken, overdue) shouldBe None
     }
   }
 }
