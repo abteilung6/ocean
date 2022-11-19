@@ -14,6 +14,8 @@ import repositories.dto.Account
 
 class AccountController(endpointController: EndpointController) extends BaseController with FailFastCirceSupport {
 
+  override val tag: String = "Account"
+
   override val basePath: String = "account"
 
   override def route: Route = AkkaHttpServerInterpreter().toRoute(List(getAccountEndpoint))
@@ -23,6 +25,7 @@ class AccountController(endpointController: EndpointController) extends BaseCont
   import repositories.dto.Account.Implicits._
 
   val getAccountEndpoint: ServerEndpoint[Any, Future] = endpointController.secureEndpointWithUser.get
+    .tag(tag)
     .in(basePath / "me")
     .out(jsonBody[Account])
     .serverLogicSuccess { (account: Account) => _ =>

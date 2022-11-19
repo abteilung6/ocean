@@ -1,7 +1,7 @@
 package org.abteilung6.ocean
 package repositories.utils
 
-import repositories.dto.Account
+import repositories.dto.{ Account, AuthenticatorType }
 
 import java.time.Instant
 
@@ -15,8 +15,16 @@ object TestAccountUtils {
     lastname: String = "lastname2",
     employeeType: String = "student",
     createdAt: Instant = Instant.now(),
-    lastLoginAt: Option[Instant] = Some(Instant.now()),
-    expiresAt: Option[Instant] = Some(Instant.now())
+    authenticatorType: AuthenticatorType = AuthenticatorType.Directory
   ): Account =
-    Account(id, username, email, firstname, lastname, employeeType, createdAt, lastLoginAt, expiresAt)
+    Account(
+      id,
+      username,
+      email,
+      firstname,
+      lastname,
+      employeeType,
+      createdAt,
+      authenticatorType
+    )
 }

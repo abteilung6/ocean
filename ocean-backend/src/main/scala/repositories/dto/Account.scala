@@ -13,8 +13,7 @@ case class Account(
   lastname: String,
   employeeType: String,
   createdAt: Instant,
-  lastLoginAt: Option[Instant],
-  expiresAt: Option[Instant]
+  authenticatorType: AuthenticatorType
 )
 
 object Account {
@@ -31,20 +30,7 @@ object Account {
         ("lastname", Json.fromString(a.lastname)),
         ("employeeType", Json.fromString(a.employeeType)),
         ("createdAt", Json.fromString(a.createdAt.toString)),
-        (
-          "lastLoginAt",
-          a.lastLoginAt match {
-            case Some(value) => Json.fromString(value.toString)
-            case None        => Json.Null
-          }
-        ),
-        (
-          "expiresAt",
-          a.expiresAt match {
-            case Some(value) => Json.fromString(value.toString)
-            case None        => Json.Null
-          }
-        )
+        ("authenticatorType", Json.fromString(a.authenticatorType.entryName))
       )
     }
 
@@ -58,8 +44,7 @@ object Account {
           lastname <- c.downField("lastname").as[String]
           employeeType <- c.downField("employeeType").as[String]
           createdAt <- c.downField("createdAt").as[Instant]
-          lastLoginAt <- c.downField("lastLoginAt").as[Option[Instant]]
-          expiresAt <- c.downField("expiresAt").as[Option[Instant]]
+          authenticatorType <- c.downField("authenticatorType").as[AuthenticatorType]
         } yield Account(
           id,
           username,
@@ -68,8 +53,7 @@ object Account {
           lastname,
           employeeType,
           createdAt,
-          lastLoginAt,
-          expiresAt
+          authenticatorType
         )
     }
   }

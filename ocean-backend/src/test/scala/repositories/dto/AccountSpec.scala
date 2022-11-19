@@ -22,17 +22,16 @@ class AccountSpec extends AnyWordSpec with Matchers with MockitoSugar with Eithe
           |  "lastname" : "lastname2",
           |  "employeeType" : "student",
           |  "createdAt" : "2022-11-09T19:14:31.903Z",
-          |  "lastLoginAt" : null,
-          |  "expiresAt" : "2022-11-09T19:14:31.903Z"
+          |  "authenticatorType" : "credentials"
           |}""".stripMargin
     val dummyAccount = getDummyAccount(
       createdAt = Instant.parse("2022-11-09T19:14:31.903Z"),
-      lastLoginAt = None,
-      expiresAt = Some(Instant.parse("2022-11-09T19:14:31.903Z"))
+      authenticatorType = AuthenticatorType.Credentials
     )
 
     "encode" in {
       import io.circe.syntax._
+      print(dummyAccount.asJson.spaces2)
       dummyAccount.asJson.spaces2 shouldBe accountString
     }
 

@@ -4,7 +4,7 @@ package services
 import repositories.AccountRepository
 import services.DirectoryService.UserEntry
 import repositories.dto.auth.{ AccessTokenContent, AuthResponse, RefreshTokenContent }
-import repositories.dto.Account
+import repositories.dto.{ Account, AuthenticatorType }
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -14,11 +14,11 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
 
   import AuthService._
 
-  def authenticate(username: String, password: String): Future[AuthResponse] =
+  def authenticateWithDirectory(username: String, password: String): Future[AuthResponse] =
     directoryService.authenticate(username, password) match {
       case Failure(exception) => withErrorMapping(exception)
       case Success(userEntry) =>
-        getOrCreateUser(userEntry)
+        getOrCreateUserFor(userEntry)
           .flatMap { account =>
             Future.successful(
               jwtService.obtainsTokens(
@@ -36,9 +36,9 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
   def refreshTokens(refreshToken: String): Option[AuthResponse] =
     jwtService.refreshTokens(refreshToken, Instant.now.getEpochSecond)
 
-  private def getOrCreateUser(userEntry: UserEntry): Future[Account] =
+  private def getOrCreateUserFor(userEntry: UserEntry): Future[Account] =
     for {
-      accountOpt <- accountRepository.getAccountByUsername(userEntry.uid)
+      accountOpt <- accountRepository.getAccountByUsername(userEntry.uid, AuthenticatorType.Directory)
       account <- accountOpt match {
         case Some(value) => Future.successful(value)
         case None        => accountRepository.addAccount(mapUserEntryToAccount(userEntry))
@@ -54,8 +54,7 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
       userEntry.name,
       userEntry.employeeType,
       Instant.now,
-      None,
-      None
+      AuthenticatorType.Directory
     )
 
   def withErrorMapping(throwable: Throwable): Future[Nothing] =

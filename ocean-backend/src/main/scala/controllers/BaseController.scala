@@ -6,6 +6,7 @@ import sttp.tapir.AnyEndpoint
 
 trait BaseController {
   val basePath: String
+  val tag: String
   def route: Route
   def endpoints: List[AnyEndpoint]
 }

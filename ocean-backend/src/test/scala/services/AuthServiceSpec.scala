@@ -44,12 +44,12 @@ class AuthServiceSpec extends AnyWordSpec with Matchers with MockitoSugar {
 
       when(directoryServiceMock.authenticate(anyString(), anyString()))
         .thenReturn(Success(userEntry))
-      when(accountRepositoryMock.getAccountByUsername(anyString()))
+      when(accountRepositoryMock.getAccountByUsername(anyString(), any()))
         .thenReturn(Future.successful(Some(dummyAccount)))
       when(jwtServiceMock.obtainsTokens(any(), any(), any()))
         .thenReturn(authResponseMock)
 
-      val futureAuthResponse = authService.authenticate("foo", "bar")
+      val futureAuthResponse = authService.authenticateWithDirectory("foo", "bar")
       futureAuthResponse.map { authResponse =>
         authResponse shouldBe authResponseMock
       }
@@ -61,7 +61,7 @@ class AuthServiceSpec extends AnyWordSpec with Matchers with MockitoSugar {
       when(directoryServiceMock.authenticate(anyString(), anyString()))
         .thenReturn(Failure(DirectoryService.Exceptions.AccessDenied()))
 
-      val futureException = authService.authenticate("foo", "bar")
+      val futureException = authService.authenticateWithDirectory("foo", "bar")
       futureException.failed.map { exception =>
         exception.isInstanceOf[AuthService.IncorrectCredentialsException] shouldBe true
       }

@@ -1,7 +1,7 @@
 package org.abteilung6.ocean
 package repositories
 
-import repositories.dto.Account
+import repositories.dto.{ Account, AuthenticatorType }
 import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.ProvenShape
@@ -24,10 +24,16 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
       ts => ts.toInstant
     )
 
+  implicit val authenticatorTypeColumnType: BaseColumnType[AuthenticatorType] =
+    MappedColumnType.base[AuthenticatorType, String](
+      e => e.toString,
+      s => AuthenticatorType.withName(s)
+    )
+
   class AccountTable(tag: Tag) extends Table[Account](tag, "accounts") {
     def accountId: Rep[Long] = column[Long]("account_id", O.PrimaryKey, O.AutoInc)
 
-    def username: Rep[String] = column[String]("username", O.Unique)
+    def username: Rep[String] = column[String]("username")
 
     def email: Rep[String] = column[String]("email", O.Unique)
 
@@ -39,9 +45,7 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
 
     def createdAt: Rep[Instant] = column[Instant]("created_at")
 
-    def lastLoginAt: Rep[Option[Instant]] = column[Option[Instant]]("last_login_at")
-
-    def expiresAt: Rep[Option[Instant]] = column[Option[Instant]]("expires_at")
+    def authenticatorType: Rep[AuthenticatorType] = column[AuthenticatorType]("authenticator_type")
 
     def * : ProvenShape[Account] =
       (
@@ -52,15 +56,20 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
         lastname,
         employeeType,
         createdAt,
-        lastLoginAt,
-        expiresAt
+        authenticatorType
       ) <> ((Account.apply _).tupled, Account.unapply)
+
+    def indexUsernameAuthenticatorType =
+      index("idx_username_authenticator_type", (username, authenticatorType), unique = true)
   }
 
   val accounts = TableQuery[AccountTable]
 
-  def getAccountByUsername(username: String): Future[Option[Account]] = db.run(
-    accounts.filter(_.username === username).result.headOption
+  def getAccountByUsername(username: String, authenticatorType: AuthenticatorType): Future[Option[Account]] = db.run(
+    accounts
+      .filter(account => account.username === username && account.authenticatorType === authenticatorType)
+      .result
+      .headOption
   )
 
   def getAccountById(accountId: Long): Future[Option[Account]] = db.run(

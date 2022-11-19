@@ -36,10 +36,10 @@ class AuthControllerSpec
       val authServiceMock: AuthService = mock[AuthService]
       val authController = new AuthController(authServiceMock)
 
-      when(authServiceMock.authenticate(anyString(), anyString()))
+      when(authServiceMock.authenticateWithDirectory(anyString(), anyString()))
         .thenReturn(Future.successful(authResponse))
 
-      Post("/auth/signin", httpEntity) ~> authController.route ~> check {
+      Post("/auth/signin?authenticator=directory", httpEntity) ~> authController.route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[AuthResponse] shouldBe authResponse
       }
@@ -49,10 +49,10 @@ class AuthControllerSpec
       val authServiceMock: AuthService = mock[AuthService]
       val authController = new AuthController(authServiceMock)
 
-      when(authServiceMock.authenticate(anyString(), anyString()))
+      when(authServiceMock.authenticateWithDirectory(anyString(), anyString()))
         .thenReturn(Future.failed(AuthService.IncorrectCredentialsException("foo")))
 
-      Post("/auth/signin", httpEntity) ~> authController.route ~> check {
+      Post("/auth/signin?authenticator=directory", httpEntity) ~> authController.route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ResponseError] shouldBe ResponseError(StatusCodes.Unauthorized.intValue, "foo")
       }
