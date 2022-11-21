@@ -4,7 +4,6 @@ package controllers
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import services.AuthService
-
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import repositories.dto.auth.{ AuthResponse, RefreshTokenRequest, RegisterAccountRequest, SignInRequest }
 import repositories.dto.response.ResponseError
@@ -14,7 +13,6 @@ import sttp.tapir._
 import sttp.tapir.server.akkahttp.AkkaHttpServerInterpreter
 import sttp.tapir.json.circe._
 import sttp.tapir.generic.auto._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class AuthController(authService: AuthService) extends BaseController with FailFastCirceSupport {
@@ -45,7 +43,7 @@ class AuthController(authService: AuthService) extends BaseController with FailF
     endpoint.post
       .tag(tag)
       .description("Sign in with an authenticator")
-      .in(basePath / "signin")
+      .in(this.withSubEndpoint("signin"))
       .in(query[AuthenticatorType]("authenticator"))
       .in(jsonBody[SignInRequest])
       .errorOut(jsonBody[ResponseError])
@@ -75,7 +73,7 @@ class AuthController(authService: AuthService) extends BaseController with FailF
   val refreshTokenEndpoint: PublicEndpoint[RefreshTokenRequest, ResponseError, AuthResponse, Any] =
     endpoint.post
       .tag(tag)
-      .in(basePath / "refresh")
+      .in(this.withSubEndpoint("refresh"))
       .in(jsonBody[RefreshTokenRequest])
       .errorOut(jsonBody[ResponseError])
       .out(jsonBody[AuthResponse])
@@ -89,11 +87,19 @@ class AuthController(authService: AuthService) extends BaseController with FailF
   val registerAccountEndpoint: PublicEndpoint[RegisterAccountRequest, ResponseError, Account, Any] =
     endpoint.post
       .tag(tag)
-      .in(basePath / "register")
+      .in(this.withSubEndpoint("register"))
       .in(jsonBody[RegisterAccountRequest])
       .errorOut(jsonBody[ResponseError])
       .out(jsonBody[Account])
 
   def registerAccountLogic(registerAccountRequest: RegisterAccountRequest): Future[Either[ResponseError, Account]] =
-    Future(Left(ResponseError(404, "fake error")))
+    authService
+      .registerWithCredentials(registerAccountRequest)
+      .map(account => Right(account))
+      .recover {
+        case AuthService.InternalError(message) =>
+          Left(ResponseError(StatusCodes.InternalServerError.intValue, message))
+        case e: AuthService.AuthServiceException =>
+          Left(ResponseError(StatusCodes.BadRequest.intValue, e.getMessage))
+      }
 }

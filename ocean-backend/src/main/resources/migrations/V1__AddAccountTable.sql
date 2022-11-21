@@ -1,5 +1,3 @@
-CREATE TYPE AuthenticatorType AS ENUM ('directory', 'credentials');
-
 CREATE TABLE accounts (
 	account_id BIGSERIAL PRIMARY KEY,
 	username VARCHAR ( 50 ) NOT NULL,
@@ -8,8 +6,6 @@ CREATE TABLE accounts (
 	lastname VARCHAR ( 255 ) NOT NULL,
 	employee_type VARCHAR ( 255 ) NOT NULL,
 	created_at TIMESTAMP NOT NULL,
-    last_login_at TIMESTAMP,
-    expires_at TIMESTAMP,
-    authenticator_type AuthenticatorType,
+    authenticator_type VARCHAR ( 255 ) NOT NULL,
     UNIQUE (username, authenticator_type)
 );

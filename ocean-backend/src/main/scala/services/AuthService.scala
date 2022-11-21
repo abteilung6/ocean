@@ -3,11 +3,14 @@ package services
 
 import repositories.AccountRepository
 import services.DirectoryService.UserEntry
-import repositories.dto.auth.{ AccessTokenContent, AuthResponse, RefreshTokenContent }
+import repositories.dto.auth.{ AccessTokenContent, AuthResponse, RefreshTokenContent, RegisterAccountRequest }
 import repositories.dto.{ Account, AuthenticatorType }
+import utils.Validator
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, Future }
 import scala.util.{ Failure, Success }
 
 class AuthService(directoryService: DirectoryService, accountRepository: AccountRepository, jwtService: JwtService) {
@@ -16,7 +19,7 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
 
   def authenticateWithDirectory(username: String, password: String): Future[AuthResponse] =
     directoryService.authenticate(username, password) match {
-      case Failure(exception) => withErrorMapping(exception)
+      case Failure(exception) => withDirectoryErrorMapping(exception)
       case Success(userEntry) =>
         getOrCreateUserFor(userEntry)
           .flatMap { account =>
@@ -29,9 +32,75 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
             )
           }
           .recoverWith { case e: Throwable =>
-            withErrorMapping(e)
+            withDirectoryErrorMapping(e)
           }
     }
+
+  def registerWithCredentials(registerAccountRequest: RegisterAccountRequest): Future[Account] = {
+    // Email validation
+    if (!Validator.validateEmail(registerAccountRequest.email)) {
+      return Future.failed(EmailWrongFormatException())
+    }
+
+    // Username validation
+    if (!Validator.isAlphanumeric(registerAccountRequest.username)) {
+      return Future.failed(UserWrongFormatException("Username must be alphanumeric"))
+    }
+    if (
+      !Validator.min(registerAccountRequest.username, 3)
+      || !Validator.max(registerAccountRequest.username, 20)
+    ) {
+      return Future.failed(UserWrongFormatException("Username must be between 3 and 20 characters long"))
+    }
+
+    // Firstname validation
+    if (!Validator.isAlphanumeric(registerAccountRequest.firstname)) {
+      return Future.failed(FirstnameWrongFormatException("Firstname must be alphanumeric"))
+    }
+    if (
+      !Validator.min(registerAccountRequest.firstname, 2)
+      || !Validator.max(registerAccountRequest.firstname, 20)
+    ) {
+      return Future.failed(FirstnameWrongFormatException("Firstname must be between 2 and 20 characters long"))
+    }
+
+    // Lastname validation
+    if (!Validator.isAlphanumeric(registerAccountRequest.lastname)) {
+      return Future.failed(LastnameWrongFormatException("Lastname must be alphanumeric"))
+    }
+    if (
+      !Validator.min(registerAccountRequest.lastname, 2)
+      || !Validator.max(registerAccountRequest.lastname, 20)
+    ) {
+      return Future.failed(LastnameWrongFormatException("Lastname must be between 2 and 20 characters long"))
+    }
+
+    // Password validation
+    if (
+      !Validator.min(registerAccountRequest.password, 6)
+      || !Validator.max(registerAccountRequest.password, 64)
+    ) {
+      return Future.failed(PasswordWrongFormatException("Password must be between 6 and 64 characters long"))
+    }
+
+    // Validation with database queries should occur at the end
+    val accountWithUsername =
+      Await.result(
+        accountRepository.getAccountByUsername(registerAccountRequest.username, AuthenticatorType.Credentials),
+        Duration(5, TimeUnit.SECONDS)
+      )
+    if (accountWithUsername.isDefined) {
+      return Future.failed(AccountAlreadyExistsException("Account with the same username already exists"))
+    }
+    val accountWithEmail =
+      Await.result(accountRepository.getAccountByEmail(registerAccountRequest.email), Duration(5, TimeUnit.SECONDS))
+    if (accountWithEmail.isDefined) {
+      return Future.failed(AccountAlreadyExistsException("Account with the same email already exists"))
+    }
+
+    val accountToBeCreated = mapRegisterAccountRequestToAccount(registerAccountRequest)
+    accountRepository.addAccount(accountToBeCreated)
+  }
 
   def refreshTokens(refreshToken: String): Option[AuthResponse] =
     jwtService.refreshTokens(refreshToken, Instant.now.getEpochSecond)
@@ -57,7 +126,19 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
       AuthenticatorType.Directory
     )
 
-  def withErrorMapping(throwable: Throwable): Future[Nothing] =
+  private def mapRegisterAccountRequestToAccount(registerAccountRequest: RegisterAccountRequest): Account =
+    Account(
+      0L,
+      registerAccountRequest.username,
+      registerAccountRequest.email,
+      registerAccountRequest.firstname,
+      registerAccountRequest.lastname,
+      "",
+      Instant.now(),
+      AuthenticatorType.Credentials
+    )
+
+  def withDirectoryErrorMapping(throwable: Throwable): Future[Nothing] =
     throwable match {
       case _: DirectoryService.Exceptions.AccessDenied  => Future.failed(IncorrectCredentialsException())
       case e: DirectoryService.Exceptions.InternalError => Future.failed(InternalError(e.message))
@@ -69,9 +150,28 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
 }
 
 object AuthService {
-  sealed abstract class AuthServiceException(message: String) extends Exception(message)
+
+  abstract class AuthServiceException(message: String) extends Exception(message)
 
   case class IncorrectCredentialsException(message: String = "Incorrect credentials")
+      extends AuthServiceException(message)
+
+  case class EmailWrongFormatException(message: String = "Email address has a wrong format")
+      extends AuthServiceException(message)
+
+  case class UserWrongFormatException(message: String = "Username has a wrong format")
+      extends AuthServiceException(message)
+
+  case class PasswordWrongFormatException(message: String = "Password has a wrong format")
+      extends AuthServiceException(message)
+
+  case class FirstnameWrongFormatException(message: String = "Firstname has a wrong format")
+      extends AuthServiceException(message)
+
+  case class LastnameWrongFormatException(message: String = "Lastname has a wrong format")
+      extends AuthServiceException(message)
+
+  case class AccountAlreadyExistsException(message: String = "Account with the same identity already exists")
       extends AuthServiceException(message)
 
   final case class InternalError(message: String = "Internal error") extends AuthServiceException(message)

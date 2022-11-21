@@ -26,7 +26,7 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
 
   implicit val authenticatorTypeColumnType: BaseColumnType[AuthenticatorType] =
     MappedColumnType.base[AuthenticatorType, String](
-      e => e.toString,
+      e => e.entryName,
       s => AuthenticatorType.withName(s)
     )
 
@@ -65,6 +65,10 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
 
   val accounts = TableQuery[AccountTable]
 
+  def getAccountById(accountId: Long): Future[Option[Account]] = db.run(
+    accounts.filter(_.accountId === accountId).result.headOption
+  )
+
   def getAccountByUsername(username: String, authenticatorType: AuthenticatorType): Future[Option[Account]] = db.run(
     accounts
       .filter(account => account.username === username && account.authenticatorType === authenticatorType)
@@ -72,8 +76,8 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
       .headOption
   )
 
-  def getAccountById(accountId: Long): Future[Option[Account]] = db.run(
-    accounts.filter(_.accountId === accountId).result.headOption
+  def getAccountByEmail(email: String): Future[Option[Account]] = db.run(
+    accounts.filter(_.email === email).result.headOption
   )
 
   def addAccount(account: Account): Future[Account] = db.run(

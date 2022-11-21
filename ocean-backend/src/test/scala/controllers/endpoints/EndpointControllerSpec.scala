@@ -12,7 +12,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import scala.concurrent.Future
 import repositories.dto.response.ResponseError
 import repositories.AccountRepository
-import repositories.utils.TestAccountUtils.getDummyAccount
+import repositories.utils.TestMockUtils.getMockAccount
 import org.mockito.ArgumentMatchers
 
 class EndpointControllerSpec extends AnyWordSpec with Matchers with MockitoSugar with ScalatestRouteTest {
@@ -27,7 +27,7 @@ class EndpointControllerSpec extends AnyWordSpec with Matchers with MockitoSugar
 
   "verifyBearerTokenLogic" should {
     "return the user" in {
-      val dummyAccount = getDummyAccount(id = 42)
+      val dummyAccount = getMockAccount(id = 42)
       val accessToken = "ey..."
       val accountRepositoryMock: AccountRepository = mock[AccountRepository]
       val jwtServiceMock: JwtService = mock[JwtService]

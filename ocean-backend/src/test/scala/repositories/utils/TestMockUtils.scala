@@ -2,12 +2,13 @@ package org.abteilung6.ocean
 package repositories.utils
 
 import repositories.dto.{ Account, AuthenticatorType }
+import repositories.dto.auth.RegisterAccountRequest
 
 import java.time.Instant
 
-object TestAccountUtils {
+object TestMockUtils {
 
-  def getDummyAccount(
+  def getMockAccount(
     id: Long = 0L,
     username: String = "username1",
     email: String = "username1@localhost",
@@ -27,4 +28,13 @@ object TestAccountUtils {
       createdAt,
       authenticatorType
     )
+
+  def getMockRegisterAccountRequest(
+    username: String = "username",
+    password: String = "password",
+    email: String = "alice@bob.com",
+    firstname: String = "Firstname",
+    lastname: String = "Lastname"
+  ): RegisterAccountRequest =
+    RegisterAccountRequest(username, password, email, firstname, lastname)
 }
