@@ -11,12 +11,16 @@ object Dependencies {
     val macwireVersion = "2.5.8"
     val directoryApiVersion = "2.1.2"
     val slickVersion = "3.3.3"
+    val hikaricpVersion = "3.3.3"
     val postgresVersion = "42.5.0"
     val flywayVersion = "9.3.0"
     val logbackVersion = "1.2.11"
     val scalaTestVersion = "3.2.13"
     val scalaMockitoVersion = "3.2.12.0"
     val tapirVersion = "1.1.3"
+    val enumeratumVersion = "1.7.0"
+    val tapirEnumeratumVersion = "0.17.5"
+    val enumeratumCirceVersion = "1.7.0"
   }
 
   val akkaActor = "com.typesafe.akka" %% "akka-actor-typed" % Version.akkaVersion
@@ -30,7 +34,7 @@ object Dependencies {
   val macwire = "com.softwaremill.macwire" %% "macros" % Version.macwireVersion % Provided
   val directoryApi = "org.apache.directory.api" % "api-all" % Version.directoryApiVersion
   val slick = "com.typesafe.slick" %% "slick" % Version.slickVersion
-  val hikaricp = "com.typesafe.slick" %% "slick-hikaricp" % "3.3.3"
+  val hikaricp = "com.typesafe.slick" %% "slick-hikaricp" % Version.hikaricpVersion
   val postgres = "org.postgresql" % "postgresql" % Version.postgresVersion
   val flyway = "org.flywaydb" % "flyway-core" % Version.flywayVersion
   val h2 = "com.h2database" % "h2" % "2.1.214" % Test
@@ -43,11 +47,29 @@ object Dependencies {
   val tapirAkka = "com.softwaremill.sttp.tapir" %% "tapir-akka-http-server" % Version.tapirVersion
   val tapirCirce = "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % Version.tapirVersion
   val tapirSwagger = "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % Version.tapirVersion
+  val enumeratum = "com.beachape" %% "enumeratum" % Version.enumeratumVersion
+  val tapirEnumeratum = "com.softwaremill.sttp.tapir" %% "tapir-enumeratum" % Version.tapirEnumeratumVersion
+  val enumeratumCirce = "com.beachape" %% "enumeratum-circe" % Version.enumeratumCirceVersion
 
   lazy val akkaDependencies: Seq[ModuleID] =
     Seq(akkaActor, akkaStream, akkaHttp, akkaHttpCirce, circeCore, circeGeneric, circeParser, jwtCirce)
   lazy val coreDependencies: Seq[ModuleID] =
-    Seq(macwire, directoryApi, slick, hikaricp, postgres, flyway, h2, tapir, tapirAkka, tapirCirce, tapirSwagger)
+    Seq(
+      macwire,
+      directoryApi,
+      slick,
+      hikaricp,
+      postgres,
+      flyway,
+      h2,
+      tapir,
+      tapirAkka,
+      tapirCirce,
+      tapirSwagger,
+      enumeratum,
+      tapirEnumeratum,
+      enumeratumCirce
+    )
   lazy val logDependencies: Seq[ModuleID] = Seq(logback)
   lazy val testDependencies: Seq[ModuleID] = Seq(scalaTest, mockito, akkaStreamTestkit, akkaHttpTestkit)
 }

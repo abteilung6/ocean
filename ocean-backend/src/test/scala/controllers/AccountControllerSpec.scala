@@ -16,7 +16,7 @@ import akka.http.scaladsl.model.headers.OAuth2BearerToken
 import controllers.endpoints.EndpointController
 import repositories.AccountRepository
 import repositories.dto.Account
-import repositories.utils.TestAccountUtils.getDummyAccount
+import repositories.utils.TestMockUtils.getMockAccount
 import org.mockito.ArgumentMatchers
 
 class AccountControllerSpec
@@ -30,7 +30,7 @@ class AccountControllerSpec
 
   val defaultAccountRepositoryMock: AccountRepository = mock[AccountRepository]
   val defaultJwtServiceMock: JwtService = mock[JwtService]
-  val defaultDummyAccount: Account = getDummyAccount(42)
+  val defaultDummyAccount: Account = getMockAccount(42)
 
   // We might extract this method in the future,
   // since want to test other endpoints with the same base endpoint.

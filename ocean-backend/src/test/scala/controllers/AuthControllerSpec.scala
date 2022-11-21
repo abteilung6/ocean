@@ -14,6 +14,10 @@ import org.scalatestplus.mockito.MockitoSugar
 import scala.concurrent.Future
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import repositories.dto.response.ResponseError
+import repositories.utils.TestMockUtils.{ getMockAccount, getMockRegisterAccountRequest }
+import repositories.dto.{ Account, AuthenticatorType }
+import services.AuthService.AccountAlreadyExistsException
+import org.mockito.ArgumentMatchers
 
 class AuthControllerSpec
     extends AnyWordSpec
@@ -22,10 +26,12 @@ class AuthControllerSpec
     with ScalatestRouteTest
     with FailFastCirceSupport {
 
+  import repositories.dto.Account.Implicits._
   import repositories.dto.auth.AuthResponse.Implicits._
+  import repositories.dto.auth.RegisterAccountRequest.Implicits._
   import repositories.dto.response.ResponseError.Implicits._
 
-  "signIn" should {
+  "signIn with authenticator type directory" should {
     val username = "username1"
     val password = "password1"
     val signInRequestStr = s"""{"username":"${username}","password":"${password}"}"""
@@ -36,10 +42,13 @@ class AuthControllerSpec
       val authServiceMock: AuthService = mock[AuthService]
       val authController = new AuthController(authServiceMock)
 
-      when(authServiceMock.authenticate(anyString(), anyString()))
+      when(authServiceMock.authenticateWithDirectory(anyString(), anyString()))
         .thenReturn(Future.successful(authResponse))
 
-      Post("/auth/signin", httpEntity) ~> authController.route ~> check {
+      Post(
+        authController.withSubRoute("signin", Map("authenticator" -> AuthenticatorType.Directory.entryName)),
+        httpEntity
+      ) ~> authController.route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[AuthResponse] shouldBe authResponse
       }
@@ -49,10 +58,13 @@ class AuthControllerSpec
       val authServiceMock: AuthService = mock[AuthService]
       val authController = new AuthController(authServiceMock)
 
-      when(authServiceMock.authenticate(anyString(), anyString()))
+      when(authServiceMock.authenticateWithDirectory(anyString(), anyString()))
         .thenReturn(Future.failed(AuthService.IncorrectCredentialsException("foo")))
 
-      Post("/auth/signin", httpEntity) ~> authController.route ~> check {
+      Post(
+        authController.withSubRoute("signin", Map("authenticator" -> AuthenticatorType.Directory.entryName)),
+        httpEntity
+      ) ~> authController.route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ResponseError] shouldBe ResponseError(StatusCodes.Unauthorized.intValue, "foo")
       }
@@ -72,7 +84,7 @@ class AuthControllerSpec
       when(authServiceMock.refreshTokens(anyString()))
         .thenReturn(Some(authResponse))
 
-      Post("/auth/refresh", httpEntity) ~> authController.route ~> check {
+      Post(authController.withSubRoute("refresh"), httpEntity) ~> authController.route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[AuthResponse] shouldBe authResponse
       }
@@ -84,9 +96,51 @@ class AuthControllerSpec
 
       when(authServiceMock.refreshTokens(anyString())).thenReturn(None)
 
-      Post("/auth/refresh", httpEntity) ~> authController.route ~> check {
+      Post(authController.withSubRoute("refresh"), httpEntity) ~> authController.route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ResponseError] shouldBe ResponseError(StatusCodes.Unauthorized.intValue, "Invalid refresh token")
+      }
+    }
+  }
+
+  "register with authenticator type credentials" should {
+    import io.circe.syntax._
+
+    "return the created account" in {
+      val authServiceMock: AuthService = mock[AuthService]
+      val authController = new AuthController(authServiceMock)
+      val account = getMockAccount()
+      val registerAccountRequest = getMockRegisterAccountRequest()
+
+      when(authServiceMock.registerWithCredentials(ArgumentMatchers.eq(registerAccountRequest)))
+        .thenReturn(Future(account))
+
+      Post(
+        authController.withSubRoute("register"),
+        HttpEntity(`application/json`, registerAccountRequest.asJson.spaces2)
+      ) ~> authController.route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[Account] shouldBe account
+      }
+    }
+
+    "return BadRequest status if registration is invalid" in {
+      val authServiceMock: AuthService = mock[AuthService]
+      val authController = new AuthController(authServiceMock)
+      val registerAccountRequest = getMockRegisterAccountRequest(email = "duplicate@duplicate.com")
+
+      when(authServiceMock.registerWithCredentials(ArgumentMatchers.eq(registerAccountRequest)))
+        .thenReturn(Future.failed(AccountAlreadyExistsException("Account with the same email already exists")))
+
+      Post(
+        authController.withSubRoute("register"),
+        HttpEntity(`application/json`, registerAccountRequest.asJson.spaces2)
+      ) ~> authController.route ~> check {
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ResponseError] shouldBe ResponseError(
+          StatusCodes.BadRequest.intValue,
+          "Account with the same email already exists"
+        )
       }
     }
   }

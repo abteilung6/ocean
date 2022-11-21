@@ -1,7 +1,7 @@
 package org.abteilung6.ocean
 package repositories.dto
 
-import repositories.utils.TestAccountUtils.getDummyAccount
+import repositories.utils.TestMockUtils.getMockAccount
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -22,13 +22,11 @@ class AccountSpec extends AnyWordSpec with Matchers with MockitoSugar with Eithe
           |  "lastname" : "lastname2",
           |  "employeeType" : "student",
           |  "createdAt" : "2022-11-09T19:14:31.903Z",
-          |  "lastLoginAt" : null,
-          |  "expiresAt" : "2022-11-09T19:14:31.903Z"
+          |  "authenticatorType" : "credentials"
           |}""".stripMargin
-    val dummyAccount = getDummyAccount(
+    val dummyAccount = getMockAccount(
       createdAt = Instant.parse("2022-11-09T19:14:31.903Z"),
-      lastLoginAt = None,
-      expiresAt = Some(Instant.parse("2022-11-09T19:14:31.903Z"))
+      authenticatorType = AuthenticatorType.Credentials
     )
 
     "encode" in {

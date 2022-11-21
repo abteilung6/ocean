@@ -1,6 +1,7 @@
 package org.abteilung6.ocean
 package repositories
 
+import org.abteilung6.ocean.repositories.dto.AuthenticatorType
 import utils.TestDatabase
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
@@ -9,7 +10,7 @@ import slick.jdbc.JdbcBackend.Database
 
 class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Matchers with BeforeAndAfterEach {
 
-  import utils.TestAccountUtils._
+  import utils.TestMockUtils._
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -26,7 +27,7 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
 
   "addAccount" should {
     "creates an account" in {
-      val dummyAccount = getDummyAccount(id = 1)
+      val dummyAccount = getMockAccount(id = 1)
       val database = getDatabase()
       val accountRepository = new AccountRepository(Some(database))
       val futureAccount = accountRepository.addAccount(dummyAccount)
@@ -38,14 +39,14 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
   }
 
   "getAccountByUsername" should {
-    "return an account by username" in {
+    "return an account by username and authenticator type" in {
       val database = getDatabase()
       val accountRepository = new AccountRepository(Some(database))
-      val dummyAccount = getDummyAccount(id = 1)
+      val dummyAccount = getMockAccount(id = 1, authenticatorType = AuthenticatorType.Directory)
 
       val result = for {
         _ <- accountRepository.addAccount(dummyAccount)
-        byUsername <- accountRepository.getAccountByUsername(dummyAccount.username)
+        byUsername <- accountRepository.getAccountByUsername(dummyAccount.username, AuthenticatorType.Directory)
       } yield byUsername
 
       result.map { optUser =>
