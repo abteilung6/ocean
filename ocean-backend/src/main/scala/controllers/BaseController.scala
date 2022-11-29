@@ -15,8 +15,20 @@ trait BaseController {
   def endpoints: List[AnyEndpoint]
 
   def withSubRoute(subRoute: String, parameters: Map[String, String] = Map()): String =
-    Uri(s"/$basePath/$subRoute").withQuery(Query(parameters)).toString()
+    Uri(s"$basePath/$subRoute").withQuery(Query(parameters)).toString()
 
   def withSubEndpoint(subEndpoint: String): EndpointInput[Unit] =
     basePath / subEndpoint
+
+  // Add https support when needed
+  def asAbsoluteURI(
+    baseURL: String,
+    port: Int,
+    subRoute: String,
+    parameters: Map[String, String] = Map()
+  ): String =
+    Uri
+      .from(scheme = "http", host = baseURL, port = port, path = s"/$subRoute")
+      .withQuery(Query(parameters))
+      .toString()
 }

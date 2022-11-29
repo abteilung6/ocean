@@ -22,7 +22,8 @@ class AccountSpec extends AnyWordSpec with Matchers with MockitoSugar with Eithe
           |  "lastname" : "lastname2",
           |  "employeeType" : "student",
           |  "createdAt" : "2022-11-09T19:14:31.903Z",
-          |  "authenticatorType" : "credentials"
+          |  "authenticatorType" : "credentials",
+          |  "verified" : false
           |}""".stripMargin
     val dummyAccount = getMockAccount(
       createdAt = Instant.parse("2022-11-09T19:14:31.903Z"),

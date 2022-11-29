@@ -17,7 +17,7 @@ object OceanApp extends App {
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "http-server-system")
   implicit val executionContext: ExecutionContextExecutor = system.executionContext
   val runtimeConfig = RuntimeConfig.load()
-  val module = new ControllerModule(runtimeConfig)
+  val module = new ControllerModule()
   val openAPIConfig = runtimeConfig.openAPIConfig
   val serverBindingConfig = runtimeConfig.serverBindingConfig
   val swaggerEndpoints =

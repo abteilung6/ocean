@@ -26,7 +26,8 @@ final case class FlywayConfig(
 final case class JwtConfig(
   key: String,
   accessExpirationTimeInSeconds: Long,
-  refreshExpirationTimeInSeconds: Long
+  refreshExpirationTimeInSeconds: Long,
+  verificationExpirationTimeInSeconds: Long
 )
 
 final case class OpenAPIConfig(
@@ -71,7 +72,8 @@ class RuntimeConfig(val config: Config) {
     JwtConfig(
       _config.getString("key"),
       _config.getLong("accessExpirationTimeInSeconds"),
-      _config.getLong("refreshExpirationTimeInSeconds")
+      _config.getLong("refreshExpirationTimeInSeconds"),
+      _config.getLong("verificationExpirationTimeInSeconds")
     )
   }
 

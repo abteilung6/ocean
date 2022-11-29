@@ -3,19 +3,33 @@ package controllers
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
-import services.AuthService
+import services.{ AuthService, EmailService, JwtService }
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
-import repositories.dto.auth.{ AuthResponse, RefreshTokenRequest, RegisterAccountRequest, SignInRequest }
+import repositories.dto.auth.{
+  AuthResponse,
+  RefreshTokenRequest,
+  RegisterAccountRequest,
+  SignInRequest,
+  VerificationTokenContent
+}
 import repositories.dto.response.ResponseError
 import repositories.dto.{ Account, AuthenticatorType }
+import utils.RuntimeConfig
 import scala.concurrent.Future
 import sttp.tapir._
 import sttp.tapir.server.akkahttp.AkkaHttpServerInterpreter
 import sttp.tapir.json.circe._
 import sttp.tapir.generic.auto._
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AuthController(authService: AuthService) extends BaseController with FailFastCirceSupport {
+class AuthController(
+  authService: AuthService,
+  emailService: EmailService,
+  jwtService: JwtService,
+  runtimeConfig: RuntimeConfig
+) extends BaseController
+    with FailFastCirceSupport {
 
   import repositories.dto.auth.SignInRequest.Implicits._
   import repositories.dto.auth.AuthResponse.Implicits._
@@ -28,14 +42,16 @@ class AuthController(authService: AuthService) extends BaseController with FailF
 
   override val basePath: String = "auth"
 
-  override def endpoints: List[AnyEndpoint] = List(signInEndpoint, refreshTokenEndpoint, registerAccountEndpoint)
+  override def endpoints: List[AnyEndpoint] =
+    List(signInEndpoint, refreshTokenEndpoint, registerAccountEndpoint, verifyEndpoint)
 
   override def route: Route =
     AkkaHttpServerInterpreter().toRoute(
       List(
         signInEndpoint.serverLogic((signInLogic _).tupled),
         refreshTokenEndpoint.serverLogic(refreshTokenLogic),
-        registerAccountEndpoint.serverLogic(registerAccountLogic)
+        registerAccountEndpoint.serverLogic(registerAccountLogic),
+        verifyEndpoint.serverLogic(verifyLogic)
       )
     )
 
@@ -95,11 +111,47 @@ class AuthController(authService: AuthService) extends BaseController with FailF
   def registerAccountLogic(registerAccountRequest: RegisterAccountRequest): Future[Either[ResponseError, Account]] =
     authService
       .registerWithCredentials(registerAccountRequest)
-      .map(account => Right(account))
+      .map { account =>
+        sendRegistrationVerificationMail(account)
+        Right(account)
+      }
       .recover {
         case AuthService.InternalError(message) =>
           Left(ResponseError(StatusCodes.InternalServerError.intValue, message))
         case e: AuthService.AuthServiceException =>
           Left(ResponseError(StatusCodes.BadRequest.intValue, e.getMessage))
       }
+
+  private def sendRegistrationVerificationMail(account: Account): Unit = {
+    val token =
+      jwtService.encodeVerificationTokenContent(VerificationTokenContent(account.id), Instant.now.getEpochSecond)
+    val serviceBindingConfig = runtimeConfig.serverBindingConfig
+    val verificationUrl =
+      this.asAbsoluteURI(
+        serviceBindingConfig.interface,
+        serviceBindingConfig.port,
+        this.withSubRoute("verify"),
+        Map("token" -> token)
+      )
+    emailService.sendRegistrationVerification(account, verificationUrl)
+  }
+
+  val verifyEndpoint: PublicEndpoint[String, ResponseError, Account, Any] =
+    endpoint.get
+      .tag(tag)
+      .description("Verify you account")
+      .in(this.withSubEndpoint("verify"))
+      .in(query[String]("token"))
+      .errorOut(jsonBody[ResponseError])
+      .out(jsonBody[Account])
+
+  def verifyLogic(token: String): Future[Either[ResponseError, Account]] =
+    jwtService.decodeVerificationTokenContent(token, Instant.now.getEpochSecond) match {
+      case Some(verificationTokenContent) =>
+        authService.verifyAccount(verificationTokenContent.userId) map {
+          case Some(account) => Right(account)
+          case None          => Left(ResponseError(StatusCodes.BadRequest.intValue, "Account does not exist"))
+        }
+      case None => Future(Left(ResponseError(StatusCodes.BadRequest.intValue, "Invalid verification token")))
+    }
 }

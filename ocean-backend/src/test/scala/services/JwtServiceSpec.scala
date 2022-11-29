@@ -15,7 +15,7 @@ class JwtServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with Tr
 
   private def getJwtService: JwtService = {
     val runtimeConfigMock = mock[RuntimeConfig]
-    when(runtimeConfigMock.jwtConfig).thenReturn(JwtConfig("mockKey", 1_000, 10_000))
+    when(runtimeConfigMock.jwtConfig).thenReturn(JwtConfig("mockKey", 1_000, 10_000, 2_000))
     new JwtService(runtimeConfigMock)
   }
 

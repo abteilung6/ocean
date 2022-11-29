@@ -13,7 +13,8 @@ case class Account(
   lastname: String,
   employeeType: String,
   createdAt: Instant,
-  authenticatorType: AuthenticatorType
+  authenticatorType: AuthenticatorType,
+  verified: Boolean
 )
 
 object Account {
@@ -30,7 +31,8 @@ object Account {
         ("lastname", Json.fromString(a.lastname)),
         ("employeeType", Json.fromString(a.employeeType)),
         ("createdAt", Json.fromString(a.createdAt.toString)),
-        ("authenticatorType", Json.fromString(a.authenticatorType.entryName))
+        ("authenticatorType", Json.fromString(a.authenticatorType.entryName)),
+        ("verified", Json.fromBoolean(a.verified))
       )
     }
 
@@ -45,6 +47,7 @@ object Account {
           employeeType <- c.downField("employeeType").as[String]
           createdAt <- c.downField("createdAt").as[Instant]
           authenticatorType <- c.downField("authenticatorType").as[AuthenticatorType]
+          verified <- c.downField("verified").as[Boolean]
         } yield Account(
           id,
           username,
@@ -53,7 +56,8 @@ object Account {
           lastname,
           employeeType,
           createdAt,
-          authenticatorType
+          authenticatorType,
+          verified
         )
     }
   }

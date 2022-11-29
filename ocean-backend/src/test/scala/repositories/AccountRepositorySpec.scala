@@ -54,4 +54,23 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
       }
     }
   }
+
+  "verifyAccountById" should {
+    "verifies an account" in {
+      val dummyAccount = getMockAccount(id = 1, verified = false)
+      val database = getDatabase()
+      val accountRepository = new AccountRepository(Some(database))
+
+      val result = for {
+        addedAccount <- accountRepository.addAccount(dummyAccount)
+        updatedRows <- accountRepository.verifyAccountById(addedAccount.id)
+        updatedAccount <- accountRepository.getAccountById(addedAccount.id)
+      } yield (updatedRows, updatedAccount)
+
+      result.map { tuple =>
+        tuple._1 shouldEqual 1
+        tuple._2.get.verified shouldBe true
+      }
+    }
+  }
 }
