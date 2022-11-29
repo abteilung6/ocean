@@ -8,5 +8,6 @@ CREATE TABLE accounts (
 	created_at TIMESTAMP NOT NULL,
     authenticator_type VARCHAR ( 255 ) NOT NULL,
     verified BOOLEAN NOT NULL DEFAULT FALSE,
+    password_hash VARCHAR ( 255 ),
     UNIQUE (username, authenticator_type)
 );

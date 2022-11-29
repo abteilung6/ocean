@@ -23,11 +23,13 @@ class AccountSpec extends AnyWordSpec with Matchers with MockitoSugar with Eithe
           |  "employeeType" : "student",
           |  "createdAt" : "2022-11-09T19:14:31.903Z",
           |  "authenticatorType" : "credentials",
-          |  "verified" : false
+          |  "verified" : false,
+          |  "passwordHash" : "hash"
           |}""".stripMargin
     val dummyAccount = getMockAccount(
       createdAt = Instant.parse("2022-11-09T19:14:31.903Z"),
-      authenticatorType = AuthenticatorType.Credentials
+      authenticatorType = AuthenticatorType.Credentials,
+      passwordHash = Some("hash")
     )
 
     "encode" in {
@@ -39,6 +41,16 @@ class AccountSpec extends AnyWordSpec with Matchers with MockitoSugar with Eithe
       import io.circe.parser.decode
       val actual = decode[Account](accountString)
       actual.value shouldBe dummyAccount
+    }
+
+    "decode null values" in {
+      import io.circe.parser.decode
+      import io.circe.syntax._
+
+      val nullableAccount = getMockAccount(passwordHash = None)
+      val nullableAccountString = nullableAccount.asJson.spaces2
+
+      decode[Account](nullableAccountString).value shouldBe nullableAccount
     }
   }
 }

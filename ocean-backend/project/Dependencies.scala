@@ -21,6 +21,7 @@ object Dependencies {
     val enumeratumVersion = "1.7.0"
     val tapirEnumeratumVersion = "0.17.5"
     val enumeratumCirceVersion = "1.7.0"
+    val bCryptVersion = "4.3.0"
   }
 
   val akkaActor = "com.typesafe.akka" %% "akka-actor-typed" % Version.akkaVersion
@@ -50,6 +51,7 @@ object Dependencies {
   val enumeratum = "com.beachape" %% "enumeratum" % Version.enumeratumVersion
   val tapirEnumeratum = "com.softwaremill.sttp.tapir" %% "tapir-enumeratum" % Version.tapirEnumeratumVersion
   val enumeratumCirce = "com.beachape" %% "enumeratum-circe" % Version.enumeratumCirceVersion
+  val bCrypt = "com.github.t3hnar" %% "scala-bcrypt" % Version.bCryptVersion
 
   lazy val akkaDependencies: Seq[ModuleID] =
     Seq(akkaActor, akkaStream, akkaHttp, akkaHttpCirce, circeCore, circeGeneric, circeParser, jwtCirce)
@@ -68,7 +70,8 @@ object Dependencies {
       tapirSwagger,
       enumeratum,
       tapirEnumeratum,
-      enumeratumCirce
+      enumeratumCirce,
+      bCrypt
     )
   lazy val logDependencies: Seq[ModuleID] = Seq(logback)
   lazy val testDependencies: Seq[ModuleID] = Seq(scalaTest, mockito, akkaStreamTestkit, akkaHttpTestkit)

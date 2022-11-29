@@ -49,6 +49,8 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
 
     def verified: Rep[Boolean] = column[Boolean]("verified")
 
+    def passwordHash: Rep[Option[String]] = column[Option[String]]("password_hash")
+
     def * : ProvenShape[Account] =
       (
         accountId,
@@ -59,7 +61,8 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
         employeeType,
         createdAt,
         authenticatorType,
-        verified
+        verified,
+        passwordHash
       ) <> ((Account.apply _).tupled, Account.unapply)
 
     def indexUsernameAuthenticatorType =
