@@ -16,7 +16,8 @@ object TestMockUtils {
     employeeType: String = "student",
     createdAt: Instant = Instant.now(),
     authenticatorType: AuthenticatorType = AuthenticatorType.Directory,
-    verified: Boolean = false
+    verified: Boolean = false,
+    passwordHash: Option[String] = None
   ): Account =
     Account(
       id,
@@ -27,7 +28,8 @@ object TestMockUtils {
       employeeType,
       createdAt,
       authenticatorType,
-      verified
+      verified,
+      passwordHash
     )
 
   def getMockRegisterAccountRequest(

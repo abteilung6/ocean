@@ -83,7 +83,17 @@ class AuthController(
               Left(ResponseError(StatusCodes.InternalServerError.intValue, message))
           }
       case AuthenticatorType.Credentials =>
-        Future(Left(ResponseError(StatusCodes.NotImplemented.intValue, "Not implemented yet")))
+        authService
+          .authenticateWithCredentials(signInRequest)
+          .map { authResponse: AuthResponse =>
+            Right(authResponse)
+          }
+          .recover {
+            case AuthService.IncorrectCredentialsException(message) =>
+              Left(ResponseError(StatusCodes.Unauthorized.intValue, message))
+            case AuthService.InternalError(message) =>
+              Left(ResponseError(StatusCodes.InternalServerError.intValue, message))
+          }
     }
 
   val refreshTokenEndpoint: PublicEndpoint[RefreshTokenRequest, ResponseError, AuthResponse, Any] =

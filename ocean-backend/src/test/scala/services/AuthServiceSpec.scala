@@ -4,8 +4,9 @@ package services
 import repositories.AccountRepository
 import repositories.utils.TestMockUtils.{ getMockAccount, getMockRegisterAccountRequest }
 import services.DirectoryService.UserEntry
-import repositories.dto.auth.AuthResponse
+import repositories.dto.auth.{ AuthResponse, SignInRequest }
 import repositories.dto.AuthenticatorType
+import utils.BCryptUtils
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{ any, anyString }
 import org.mockito.Mockito.when
@@ -65,6 +66,28 @@ class AuthServiceSpec extends AnyWordSpec with Matchers with MockitoSugar {
       val futureException = authService.authenticateWithDirectory("foo", "bar")
       futureException.failed.map { exception =>
         exception.isInstanceOf[AuthService.IncorrectCredentialsException] shouldBe true
+      }
+    }
+  }
+
+  "authenticateWithCredentials" should {
+    "return an AuthResponse" in {
+      val plainPassword = "foo"
+      val passwordHash = BCryptUtils.encryptPassword(plainPassword).get
+      val accountRepositoryMock = mock[AccountRepository]
+      val jwtServiceMock = mock[JwtService]
+      val authService = createAuthService(accountRepository = accountRepositoryMock, jwtService = jwtServiceMock)
+      val mockAccount =
+        getMockAccount(id = 1, authenticatorType = AuthenticatorType.Credentials, passwordHash = Some(passwordHash))
+      val mockAuthResponse = AuthResponse("ey.accessToken", "ey.refreshToken")
+
+      when(accountRepositoryMock.getAccountByUsername(anyString(), ArgumentMatchers.eq(AuthenticatorType.Credentials)))
+        .thenReturn(Future.successful(Some(mockAccount)))
+      when(jwtServiceMock.obtainsTokens(any(), any(), any()))
+        .thenReturn(mockAuthResponse)
+
+      authService.authenticateWithCredentials(SignInRequest("alice", plainPassword)).map { authResponse =>
+        authResponse shouldBe mockAuthResponse
       }
     }
   }

@@ -14,7 +14,8 @@ case class Account(
   employeeType: String,
   createdAt: Instant,
   authenticatorType: AuthenticatorType,
-  verified: Boolean
+  verified: Boolean,
+  passwordHash: Option[String]
 )
 
 object Account {
@@ -32,7 +33,14 @@ object Account {
         ("employeeType", Json.fromString(a.employeeType)),
         ("createdAt", Json.fromString(a.createdAt.toString)),
         ("authenticatorType", Json.fromString(a.authenticatorType.entryName)),
-        ("verified", Json.fromBoolean(a.verified))
+        ("verified", Json.fromBoolean(a.verified)),
+        (
+          "passwordHash",
+          a.passwordHash match {
+            case Some(value) => Json.fromString(value)
+            case None        => Json.Null
+          }
+        )
       )
     }
 
@@ -48,6 +56,7 @@ object Account {
           createdAt <- c.downField("createdAt").as[Instant]
           authenticatorType <- c.downField("authenticatorType").as[AuthenticatorType]
           verified <- c.downField("verified").as[Boolean]
+          passwordHash <- c.downField("passwordHash").as[Option[String]]
         } yield Account(
           id,
           username,
@@ -57,7 +66,8 @@ object Account {
           employeeType,
           createdAt,
           authenticatorType,
-          verified
+          verified,
+          passwordHash
         )
     }
   }

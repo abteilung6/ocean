@@ -3,15 +3,21 @@ package services
 
 import repositories.AccountRepository
 import services.DirectoryService.UserEntry
-import repositories.dto.auth.{ AccessTokenContent, AuthResponse, RefreshTokenContent, RegisterAccountRequest }
+import repositories.dto.auth.{
+  AccessTokenContent,
+  AuthResponse,
+  RefreshTokenContent,
+  RegisterAccountRequest,
+  SignInRequest
+}
 import repositories.dto.{ Account, AuthenticatorType }
-import utils.Validator
+import utils.{ BCryptUtils, Validator }
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future }
-import scala.util.{ Failure, Success }
+import scala.util.{ Failure, Success, Try }
 
 class AuthService(directoryService: DirectoryService, accountRepository: AccountRepository, jwtService: JwtService) {
 
@@ -34,6 +40,19 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
           .recoverWith { case e: Throwable =>
             withDirectoryErrorMapping(e)
           }
+    }
+
+  def authenticateWithCredentials(signInRequest: SignInRequest): Future[AuthResponse] =
+    accountRepository.getAccountByUsername(signInRequest.username, AuthenticatorType.Credentials) flatMap {
+      case Some(account) if BCryptUtils.validatePassword(account.passwordHash.get, signInRequest.password).get =>
+        Future.successful(
+          jwtService.obtainsTokens(
+            AccessTokenContent(account.id.toInt),
+            RefreshTokenContent(account.id.toInt),
+            Instant.now.getEpochSecond
+          )
+        )
+      case None => Future.failed(IncorrectCredentialsException())
     }
 
   def registerWithCredentials(registerAccountRequest: RegisterAccountRequest): Future[Account] = {
@@ -98,8 +117,11 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
       return Future.failed(AccountAlreadyExistsException("Account with the same email already exists"))
     }
 
-    val accountToBeCreated = mapRegisterAccountRequestToAccount(registerAccountRequest)
-    accountRepository.addAccount(accountToBeCreated)
+    mapRegisterAccountRequestToAccount(registerAccountRequest) match {
+      case Success(accountToBeCreated) => accountRepository.addAccount(accountToBeCreated)
+      // Using exception message would leak data
+      case Failure(_) => Future.failed(HashingException())
+    }
   }
 
   def verifyAccount(accountId: Long): Future[Option[Account]] =
@@ -130,21 +152,29 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
       userEntry.employeeType,
       Instant.now,
       AuthenticatorType.Directory,
-      verified = true
+      verified = true,
+      None
     )
 
-  private def mapRegisterAccountRequestToAccount(registerAccountRequest: RegisterAccountRequest): Account =
-    Account(
-      0L,
-      registerAccountRequest.username,
-      registerAccountRequest.email,
-      registerAccountRequest.firstname,
-      registerAccountRequest.lastname,
-      "",
-      Instant.now(),
-      AuthenticatorType.Credentials,
-      false
-    )
+  private def mapRegisterAccountRequestToAccount(registerAccountRequest: RegisterAccountRequest): Try[Account] =
+    BCryptUtils.encryptPassword(registerAccountRequest.password) match {
+      case Failure(exception) => Failure(exception)
+      case Success(hash) =>
+        Success(
+          Account(
+            0L,
+            registerAccountRequest.username,
+            registerAccountRequest.email,
+            registerAccountRequest.firstname,
+            registerAccountRequest.lastname,
+            "",
+            Instant.now(),
+            AuthenticatorType.Credentials,
+            false,
+            Some(hash)
+          )
+        )
+    }
 
   def withDirectoryErrorMapping(throwable: Throwable): Future[Nothing] =
     throwable match {
@@ -180,6 +210,9 @@ object AuthService {
       extends AuthServiceException(message)
 
   case class AccountAlreadyExistsException(message: String = "Account with the same identity already exists")
+      extends AuthServiceException(message)
+
+  case class HashingException(message: String = "Password was more than 71 bytes long")
       extends AuthServiceException(message)
 
   final case class InternalError(message: String = "Internal error") extends AuthServiceException(message)

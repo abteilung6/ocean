@@ -2,7 +2,7 @@ package org.abteilung6.ocean
 package controllers
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import repositories.dto.auth.{ AuthResponse, VerificationTokenContent }
+import repositories.dto.auth.{ AuthResponse, SignInRequest, VerificationTokenContent }
 import services.{ AuthService, EmailService, JwtService }
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.{ HttpEntity, StatusCodes }
@@ -46,6 +46,48 @@ class AuthControllerSpec
   ): AuthController = {
     when(runtimeConfig.serverBindingConfig).thenReturn(ServerBindingConfig("localhost", 8080))
     new AuthController(authService, emailService, jwtService, runtimeConfig)
+  }
+
+  "signIn with authenticator type credentials" should {
+    import io.circe.syntax._
+    import repositories.dto.auth.SignInRequest.Implicits._
+
+    val signInRequest = SignInRequest("username", "password")
+    val signInRequestStr = signInRequest.asJson.spaces2
+    val httpEntity = HttpEntity(`application/json`, signInRequestStr)
+
+    "return an AuthResponse with access and refresh token" in {
+      val authResponse = AuthResponse("accessToken", "refreshToken")
+      val authServiceMock: AuthService = mock[AuthService]
+      val authController = createAuthController(authService = authServiceMock)
+
+      when(authServiceMock.authenticateWithCredentials(ArgumentMatchers.eq(signInRequest)))
+        .thenReturn(Future.successful(authResponse))
+
+      Post(
+        authController.withSubRoute("signin", Map("authenticator" -> AuthenticatorType.Credentials.entryName)),
+        httpEntity
+      ) ~> authController.route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[AuthResponse] shouldBe authResponse
+      }
+    }
+
+    "return Unauthorized status if user does not exist" in {
+      val authServiceMock: AuthService = mock[AuthService]
+      val authController = createAuthController(authService = authServiceMock)
+
+      when(authServiceMock.authenticateWithCredentials(ArgumentMatchers.eq(signInRequest)))
+        .thenReturn(Future.failed(AuthService.IncorrectCredentialsException("foo")))
+
+      Post(
+        authController.withSubRoute("signin", Map("authenticator" -> AuthenticatorType.Credentials.entryName)),
+        httpEntity
+      ) ~> authController.route ~> check {
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ResponseError] shouldBe ResponseError(StatusCodes.Unauthorized.intValue, "foo")
+      }
+    }
   }
 
   "signIn with authenticator type directory" should {
