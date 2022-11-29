@@ -102,6 +102,12 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
     accountRepository.addAccount(accountToBeCreated)
   }
 
+  def verifyAccount(accountId: Long): Future[Option[Account]] =
+    for {
+      _ <- accountRepository.verifyAccountById(accountId)
+      updatedAccount <- accountRepository.getAccountById(accountId)
+    } yield updatedAccount
+
   def refreshTokens(refreshToken: String): Option[AuthResponse] =
     jwtService.refreshTokens(refreshToken, Instant.now.getEpochSecond)
 
@@ -123,7 +129,8 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
       userEntry.name,
       userEntry.employeeType,
       Instant.now,
-      AuthenticatorType.Directory
+      AuthenticatorType.Directory,
+      verified = true
     )
 
   private def mapRegisterAccountRequestToAccount(registerAccountRequest: RegisterAccountRequest): Account =
@@ -135,7 +142,8 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
       registerAccountRequest.lastname,
       "",
       Instant.now(),
-      AuthenticatorType.Credentials
+      AuthenticatorType.Credentials,
+      false
     )
 
   def withDirectoryErrorMapping(throwable: Throwable): Future[Nothing] =

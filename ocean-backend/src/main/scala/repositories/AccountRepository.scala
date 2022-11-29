@@ -47,6 +47,8 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
 
     def authenticatorType: Rep[AuthenticatorType] = column[AuthenticatorType]("authenticator_type")
 
+    def verified: Rep[Boolean] = column[Boolean]("verified")
+
     def * : ProvenShape[Account] =
       (
         accountId,
@@ -56,7 +58,8 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
         lastname,
         employeeType,
         createdAt,
-        authenticatorType
+        authenticatorType,
+        verified
       ) <> ((Account.apply _).tupled, Account.unapply)
 
     def indexUsernameAuthenticatorType =
@@ -82,5 +85,9 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
 
   def addAccount(account: Account): Future[Account] = db.run(
     accounts.returning(accounts) += account
+  )
+
+  def verifyAccountById(accountId: Long): Future[Int] = db.run(
+    accounts.filter(_.accountId === accountId).map(_.verified).update(true)
   )
 }

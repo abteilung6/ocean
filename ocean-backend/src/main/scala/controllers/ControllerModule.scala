@@ -5,10 +5,9 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
 import services.ServiceModule
 import sttp.tapir.AnyEndpoint
-import utils.RuntimeConfig
 import controllers.endpoints.EndpointController
 
-class ControllerModule(runtimeConfig: RuntimeConfig) extends ServiceModule {
+class ControllerModule extends ServiceModule {
 
   import com.softwaremill.macwire._
 

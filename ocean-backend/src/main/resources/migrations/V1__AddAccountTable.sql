@@ -7,5 +7,6 @@ CREATE TABLE accounts (
 	employee_type VARCHAR ( 255 ) NOT NULL,
 	created_at TIMESTAMP NOT NULL,
     authenticator_type VARCHAR ( 255 ) NOT NULL,
+    verified BOOLEAN NOT NULL DEFAULT FALSE,
     UNIQUE (username, authenticator_type)
 );
