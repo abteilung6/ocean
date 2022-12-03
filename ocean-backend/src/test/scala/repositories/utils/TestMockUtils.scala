@@ -3,6 +3,7 @@ package repositories.utils
 
 import repositories.dto.{ Account, AuthenticatorType }
 import repositories.dto.auth.RegisterAccountRequest
+import repositories.dto.project.Project
 import java.time.Instant
 
 object TestMockUtils {
@@ -40,4 +41,13 @@ object TestMockUtils {
     lastname: String = "Lastname"
   ): RegisterAccountRequest =
     RegisterAccountRequest(username, password, email, firstname, lastname)
+
+  def getMockProject(
+    id: Long = 0L,
+    name: String = "my-project-1",
+    description: String = "Short description",
+    createdAt: Instant = Instant.now(),
+    ownerId: Long = 0L
+  ): Project =
+    Project(id, name, description, createdAt, ownerId)
 }

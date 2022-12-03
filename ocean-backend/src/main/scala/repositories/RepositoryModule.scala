@@ -11,4 +11,5 @@ trait RepositoryModule extends UtilsModule {
   lazy val patchDatabase: Option[Database] = None
 
   lazy val accountRepository: AccountRepository = wire[AccountRepository]
+  lazy val projectRepository: ProjectRepository = wire[ProjectRepository]
 }

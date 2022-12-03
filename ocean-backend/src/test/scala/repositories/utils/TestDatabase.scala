@@ -4,6 +4,7 @@ package repositories.utils
 import db.DBMigrateCommand
 import utils.FlywayConfig
 import org.flywaydb.core.api.output.MigrateResult
+import slick.jdbc.JdbcBackend.Database
 import java.sql.{ Connection, DriverManager }
 
 class TestDatabase(databaseName: String = "defaultdb") {
@@ -29,6 +30,9 @@ class TestDatabase(databaseName: String = "defaultdb") {
     connection.close()
     connection = null
   }
+
+  def getPGDatabase =
+    Database.forURL(connectionString, driver = "org.postgresql.ds.PGSimpleDataSource")
 
   private def checkConnectionOrFail(): Unit =
     if (connection != null && !connection.isClosed) {
