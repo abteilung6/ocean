@@ -7,6 +7,7 @@ import akka.http.scaladsl.server.Route
 import sttp.tapir._
 
 trait BaseController {
+  val apiPrefix: String = "api"
   val basePath: String
   val tag: String
 
@@ -14,14 +15,26 @@ trait BaseController {
 
   def endpoints: List[AnyEndpoint]
 
-  def withSubRoute(subRoute: String, parameters: Map[String, String] = Map()): String =
-    Uri(s"$basePath/$subRoute").withQuery(Query(parameters)).toString()
+  /**
+   * Provides a relative URI based on overrides and parameters.
+   * {{{
+   *   > accountController.toRelativeURI(subRoute = "me", parameters = Map("page" -> "1"))
+   *   > api/account/me?page=1
+   * }}}
+   */
+  def toRelativeURI(subRoute: String = "", parameters: Map[String, String] = Map()): String = {
+    val path = subRoute match {
+      case "" => s"$apiPrefix/$basePath"
+      case _  => s"$apiPrefix/$basePath/$subRoute"
+    }
+    Uri(path).withQuery(Query(parameters)).toString()
+  }
 
-  def withSubEndpoint(subEndpoint: String): EndpointInput[Unit] =
-    basePath / subEndpoint
+  def toRelativeEndpoint(subEndpoint: String): EndpointInput[Unit] =
+    apiPrefix / basePath / subEndpoint
 
   // Add https support when needed
-  def asAbsoluteURI(
+  def toAbsoluteURI(
     baseURL: String,
     port: Int,
     subRoute: String,

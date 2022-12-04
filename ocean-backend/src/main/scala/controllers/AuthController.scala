@@ -59,7 +59,7 @@ class AuthController(
     endpoint.post
       .tag(tag)
       .description("Sign in with an authenticator")
-      .in(this.withSubEndpoint("signin"))
+      .in(this.toRelativeEndpoint("signin"))
       .in(query[AuthenticatorType]("authenticator"))
       .in(jsonBody[SignInRequest])
       .errorOut(jsonBody[ResponseError])
@@ -99,7 +99,7 @@ class AuthController(
   val refreshTokenEndpoint: PublicEndpoint[RefreshTokenRequest, ResponseError, AuthResponse, Any] =
     endpoint.post
       .tag(tag)
-      .in(this.withSubEndpoint("refresh"))
+      .in(this.toRelativeEndpoint("refresh"))
       .in(jsonBody[RefreshTokenRequest])
       .errorOut(jsonBody[ResponseError])
       .out(jsonBody[AuthResponse])
@@ -113,7 +113,7 @@ class AuthController(
   val registerAccountEndpoint: PublicEndpoint[RegisterAccountRequest, ResponseError, Account, Any] =
     endpoint.post
       .tag(tag)
-      .in(this.withSubEndpoint("register"))
+      .in(this.toRelativeEndpoint("register"))
       .in(jsonBody[RegisterAccountRequest])
       .errorOut(jsonBody[ResponseError])
       .out(jsonBody[Account])
@@ -137,10 +137,10 @@ class AuthController(
       jwtService.encodeVerificationTokenContent(VerificationTokenContent(account.id), Instant.now.getEpochSecond)
     val serviceBindingConfig = runtimeConfig.serverBindingConfig
     val verificationUrl =
-      this.asAbsoluteURI(
+      this.toAbsoluteURI(
         serviceBindingConfig.interface,
         serviceBindingConfig.port,
-        this.withSubRoute("verify"),
+        this.toRelativeURI("verify"),
         Map("token" -> token)
       )
     emailService.sendRegistrationVerification(account, verificationUrl)
@@ -150,7 +150,7 @@ class AuthController(
     endpoint.get
       .tag(tag)
       .description("Verify you account")
-      .in(this.withSubEndpoint("verify"))
+      .in(this.toRelativeEndpoint("verify"))
       .in(query[String]("token"))
       .errorOut(jsonBody[ResponseError])
       .out(jsonBody[Account])

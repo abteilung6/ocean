@@ -10,4 +10,5 @@ trait ServiceModule extends RepositoryModule {
   lazy val jwtService: JwtService = wire[JwtService]
   lazy val authService: AuthService = wire[AuthService]
   lazy val emailService: EmailService = wire[EmailService]
+  lazy val projectService: ProjectService = wire[ProjectService]
 }

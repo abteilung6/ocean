@@ -17,8 +17,8 @@ import repositories.dto.response.ResponseError
 import repositories.utils.TestMockUtils.{ getMockAccount, getMockRegisterAccountRequest }
 import repositories.dto.{ Account, AuthenticatorType }
 import services.AuthService.AccountAlreadyExistsException
-import utils.{ RuntimeConfig, ServerBindingConfig }
 import services.EmailService.Mail
+import org.abteilung6.ocean.utils.{ RuntimeConfig, ServerBindingConfig }
 import org.mockito.ArgumentMatchers
 
 class AuthControllerSpec
@@ -65,7 +65,7 @@ class AuthControllerSpec
         .thenReturn(Future.successful(authResponse))
 
       Post(
-        authController.withSubRoute("signin", Map("authenticator" -> AuthenticatorType.Credentials.entryName)),
+        authController.toRelativeURI("signin", Map("authenticator" -> AuthenticatorType.Credentials.entryName)),
         httpEntity
       ) ~> authController.route ~> check {
         status shouldBe StatusCodes.OK
@@ -81,7 +81,7 @@ class AuthControllerSpec
         .thenReturn(Future.failed(AuthService.IncorrectCredentialsException("foo")))
 
       Post(
-        authController.withSubRoute("signin", Map("authenticator" -> AuthenticatorType.Credentials.entryName)),
+        authController.toRelativeURI("signin", Map("authenticator" -> AuthenticatorType.Credentials.entryName)),
         httpEntity
       ) ~> authController.route ~> check {
         status shouldBe StatusCodes.BadRequest
@@ -105,7 +105,7 @@ class AuthControllerSpec
         .thenReturn(Future.successful(authResponse))
 
       Post(
-        authController.withSubRoute("signin", Map("authenticator" -> AuthenticatorType.Directory.entryName)),
+        authController.toRelativeURI("signin", Map("authenticator" -> AuthenticatorType.Directory.entryName)),
         httpEntity
       ) ~> authController.route ~> check {
         status shouldBe StatusCodes.OK
@@ -121,7 +121,7 @@ class AuthControllerSpec
         .thenReturn(Future.failed(AuthService.IncorrectCredentialsException("foo")))
 
       Post(
-        authController.withSubRoute("signin", Map("authenticator" -> AuthenticatorType.Directory.entryName)),
+        authController.toRelativeURI("signin", Map("authenticator" -> AuthenticatorType.Directory.entryName)),
         httpEntity
       ) ~> authController.route ~> check {
         status shouldBe StatusCodes.BadRequest
@@ -143,7 +143,7 @@ class AuthControllerSpec
       when(authServiceMock.refreshTokens(anyString()))
         .thenReturn(Some(authResponse))
 
-      Post(authController.withSubRoute("refresh"), httpEntity) ~> authController.route ~> check {
+      Post(authController.toRelativeURI("refresh"), httpEntity) ~> authController.route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[AuthResponse] shouldBe authResponse
       }
@@ -155,7 +155,7 @@ class AuthControllerSpec
 
       when(authServiceMock.refreshTokens(anyString())).thenReturn(None)
 
-      Post(authController.withSubRoute("refresh"), httpEntity) ~> authController.route ~> check {
+      Post(authController.toRelativeURI("refresh"), httpEntity) ~> authController.route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ResponseError] shouldBe ResponseError(StatusCodes.Unauthorized.intValue, "Invalid refresh token")
       }
@@ -185,7 +185,7 @@ class AuthControllerSpec
         .thenReturn(Mail("from", "to", "subject", "content"))
 
       Post(
-        authController.withSubRoute("register"),
+        authController.toRelativeURI("register"),
         HttpEntity(`application/json`, registerAccountRequest.asJson.spaces2)
       ) ~> authController.route ~> check {
         status shouldBe StatusCodes.OK
@@ -202,7 +202,7 @@ class AuthControllerSpec
         .thenReturn(Future.failed(AccountAlreadyExistsException("Account with the same email already exists")))
 
       Post(
-        authController.withSubRoute("register"),
+        authController.toRelativeURI("register"),
         HttpEntity(`application/json`, registerAccountRequest.asJson.spaces2)
       ) ~> authController.route ~> check {
         status shouldBe StatusCodes.BadRequest
@@ -229,7 +229,7 @@ class AuthControllerSpec
       when(authServiceMock.verifyAccount(ArgumentMatchers.eq(unverifiedAccount.id)))
         .thenReturn(Future(Some(verifiedAccount)))
 
-      Get(authController.withSubRoute("verify", parameters = Map("token" -> token))) ~>
+      Get(authController.toRelativeURI("verify", parameters = Map("token" -> token))) ~>
         authController.route ~> check {
           status shouldBe StatusCodes.OK
         }

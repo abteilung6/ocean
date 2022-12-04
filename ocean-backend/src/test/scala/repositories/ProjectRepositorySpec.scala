@@ -50,6 +50,21 @@ class ProjectRepositorySpec
         projectRepository.addProject(mockProject)
       }
     }
+
+    "check unique constraint for name" in {
+      val projectRepository = new ProjectRepository(Some(getPGDatabase))
+      val accountRepository = new AccountRepository(Some(getPGDatabase))
+      val mockAccount = getMockAccount()
+
+      recoverToSucceededIf[JdbcSQLIntegrityConstraintViolationException] {
+        val futureProject = for {
+          addedAccount <- accountRepository.addAccount(mockAccount)
+          addedProject <- projectRepository.addProject(getMockProject(name = "p1", ownerId = addedAccount.id))
+          duplicatedProject <- projectRepository.addProject(getMockProject(name = "p1", ownerId = addedAccount.id))
+        } yield (addedProject, duplicatedProject)
+        futureProject
+      }
+    }
   }
 
   "getProjectById" should {
