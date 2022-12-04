@@ -1,12 +1,11 @@
 package org.abteilung6.ocean
 package repositories
 
-import org.abteilung6.ocean.repositories.dto.AuthenticatorType
+import repositories.dto.AuthenticatorType
 import utils.TestDatabase
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
-import slick.jdbc.JdbcBackend.Database
 
 class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Matchers with BeforeAndAfterEach {
 
@@ -22,14 +21,10 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
     this.teardown()
   }
 
-  private def getDatabase() =
-    Database.forURL(connectionString, driver = "org.postgresql.ds.PGSimpleDataSource")
-
   "addAccount" should {
     "creates an account" in {
       val dummyAccount = getMockAccount(id = 1)
-      val database = getDatabase()
-      val accountRepository = new AccountRepository(Some(database))
+      val accountRepository = new AccountRepository(Some(getPGDatabase))
       val futureAccount = accountRepository.addAccount(dummyAccount)
 
       futureAccount.map { actual =>
@@ -40,8 +35,7 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
 
   "getAccountByUsername" should {
     "return an account by username and authenticator type" in {
-      val database = getDatabase()
-      val accountRepository = new AccountRepository(Some(database))
+      val accountRepository = new AccountRepository(Some(getPGDatabase))
       val dummyAccount = getMockAccount(id = 1, authenticatorType = AuthenticatorType.Directory)
 
       val result = for {
@@ -58,8 +52,7 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
   "verifyAccountById" should {
     "verifies an account" in {
       val dummyAccount = getMockAccount(id = 1, verified = false)
-      val database = getDatabase()
-      val accountRepository = new AccountRepository(Some(database))
+      val accountRepository = new AccountRepository(Some(getPGDatabase))
 
       val result = for {
         addedAccount <- accountRepository.addAccount(dummyAccount)
