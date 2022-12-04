@@ -9,10 +9,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class ProjectService(projectRepository: ProjectRepository) {
+
   import ProjectService.Exceptions._
 
   def createProject(createProjectRequest: CreateProjectRequest, account: Account): Future[Project] = {
-    val project = Project(0L, createProjectRequest.name, createProjectRequest.description, Instant.now(), account.id)
+    val project =
+      Project(0L, createProjectRequest.name, createProjectRequest.description, Instant.now(), account.accountId)
     projectRepository.addProject(project).recoverWith { case _ => Future.failed(ProjectAlreadyExistsException()) }
   }
 }

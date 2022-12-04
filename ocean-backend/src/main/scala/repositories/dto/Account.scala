@@ -6,7 +6,7 @@ import sttp.tapir.Schema
 import java.time.Instant
 
 case class Account(
-  id: Long,
+  accountId: Long,
   username: String,
   email: String,
   firstname: String,
@@ -25,7 +25,7 @@ object Account {
 
     implicit val encodeAccount: Encoder[Account] = new Encoder[Account] {
       final def apply(a: Account): Json = Json.obj(
-        ("id", Json.fromLong(a.id)),
+        ("id", Json.fromLong(a.accountId)),
         ("username", Json.fromString(a.username)),
         ("email", Json.fromString(a.email)),
         ("firstname", Json.fromString(a.firstname)),

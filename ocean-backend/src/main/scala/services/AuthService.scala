@@ -31,8 +31,8 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
           .flatMap { account =>
             Future.successful(
               jwtService.obtainsTokens(
-                AccessTokenContent(account.id.toInt),
-                RefreshTokenContent(account.id.toInt),
+                AccessTokenContent(account.accountId.toInt),
+                RefreshTokenContent(account.accountId.toInt),
                 Instant.now.getEpochSecond
               )
             )
@@ -47,8 +47,8 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
       case Some(account) if BCryptUtils.validatePassword(account.passwordHash.get, signInRequest.password).get =>
         Future.successful(
           jwtService.obtainsTokens(
-            AccessTokenContent(account.id.toInt),
-            RefreshTokenContent(account.id.toInt),
+            AccessTokenContent(account.accountId.toInt),
+            RefreshTokenContent(account.accountId.toInt),
             Instant.now.getEpochSecond
           )
         )

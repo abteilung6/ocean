@@ -134,7 +134,7 @@ class AuthController(
 
   private def sendRegistrationVerificationMail(account: Account): Unit = {
     val token =
-      jwtService.encodeVerificationTokenContent(VerificationTokenContent(account.id), Instant.now.getEpochSecond)
+      jwtService.encodeVerificationTokenContent(VerificationTokenContent(account.accountId), Instant.now.getEpochSecond)
     val serviceBindingConfig = runtimeConfig.serverBindingConfig
     val verificationUrl =
       this.toAbsoluteURI(

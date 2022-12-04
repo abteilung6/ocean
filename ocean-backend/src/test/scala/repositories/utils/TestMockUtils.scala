@@ -9,7 +9,7 @@ import java.time.Instant
 object TestMockUtils {
 
   def getMockAccount(
-    id: Long = 0L,
+    accountId: Long = 0L,
     username: String = "username1",
     email: String = "username1@localhost",
     firstname: String = "firstname1",
@@ -21,7 +21,7 @@ object TestMockUtils {
     passwordHash: Option[String] = None
   ): Account =
     Account(
-      id,
+      accountId,
       username,
       email,
       firstname,
@@ -43,11 +43,11 @@ object TestMockUtils {
     RegisterAccountRequest(username, password, email, firstname, lastname)
 
   def getMockProject(
-    id: Long = 0L,
+    projectId: Long = 0L,
     name: String = "my-project-1",
     description: String = "Short description",
     createdAt: Instant = Instant.now(),
     ownerId: Long = 0L
   ): Project =
-    Project(id, name, description, createdAt, ownerId)
+    Project(projectId, name, description, createdAt, ownerId)
 }

@@ -20,7 +20,7 @@ object TestEndpointController {
   val defaultAccountRepositoryMock: AccountRepository = mock[AccountRepository]
   val defaultJwtServiceMock: JwtService = mock[JwtService]
   val defaultMockAccount: Account = getMockAccount(42)
-  val defaultAccessTokenContent: AccessTokenContent = AccessTokenContent(defaultMockAccount.id.toInt)
+  val defaultAccessTokenContent: AccessTokenContent = AccessTokenContent(defaultMockAccount.accountId.toInt)
 
   def createEndpointController(
     accountRepository: AccountRepository = defaultAccountRepositoryMock,

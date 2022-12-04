@@ -34,7 +34,7 @@ class ProjectRepositorySpec
 
       val futureProject = for {
         addedAccount <- accountRepository.addAccount(mockAccount)
-        addedProject <- projectRepository.addProject(getMockProject(ownerId = addedAccount.id))
+        addedProject <- projectRepository.addProject(getMockProject(ownerId = addedAccount.accountId))
       } yield addedProject
 
       futureProject.map { actual =>
@@ -59,8 +59,10 @@ class ProjectRepositorySpec
       recoverToSucceededIf[JdbcSQLIntegrityConstraintViolationException] {
         val futureProject = for {
           addedAccount <- accountRepository.addAccount(mockAccount)
-          addedProject <- projectRepository.addProject(getMockProject(name = "p1", ownerId = addedAccount.id))
-          duplicatedProject <- projectRepository.addProject(getMockProject(name = "p1", ownerId = addedAccount.id))
+          addedProject <- projectRepository.addProject(getMockProject(name = "p1", ownerId = addedAccount.accountId))
+          duplicatedProject <- projectRepository.addProject(
+            getMockProject(name = "p1", ownerId = addedAccount.accountId)
+          )
         } yield (addedProject, duplicatedProject)
         futureProject
       }
@@ -75,7 +77,7 @@ class ProjectRepositorySpec
 
       val futureProject = for {
         addedAccount <- accountRepository.addAccount(mockAccount)
-        addedProject <- projectRepository.addProject(getMockProject(ownerId = addedAccount.id))
+        addedProject <- projectRepository.addProject(getMockProject(ownerId = addedAccount.accountId))
         returnedProject <- projectRepository.getProjectById(addedProject.projectId)
       } yield returnedProject
 

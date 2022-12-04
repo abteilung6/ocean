@@ -27,7 +27,7 @@ class EndpointControllerSpec extends AnyWordSpec with Matchers with MockitoSugar
 
   "verifyBearerTokenLogic" should {
     "return the user" in {
-      val dummyAccount = getMockAccount(id = 42)
+      val dummyAccount = getMockAccount(accountId = 42)
       val accessToken = "ey..."
       val accountRepositoryMock: AccountRepository = mock[AccountRepository]
       val jwtServiceMock: JwtService = mock[JwtService]

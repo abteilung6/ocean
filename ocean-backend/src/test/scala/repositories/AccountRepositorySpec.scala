@@ -23,7 +23,7 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
 
   "addAccount" should {
     "creates an account" in {
-      val dummyAccount = getMockAccount(id = 1)
+      val dummyAccount = getMockAccount(accountId = 1)
       val accountRepository = new AccountRepository(Some(getPGDatabase))
       val futureAccount = accountRepository.addAccount(dummyAccount)
 
@@ -36,7 +36,7 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
   "getAccountByUsername" should {
     "return an account by username and authenticator type" in {
       val accountRepository = new AccountRepository(Some(getPGDatabase))
-      val dummyAccount = getMockAccount(id = 1, authenticatorType = AuthenticatorType.Directory)
+      val dummyAccount = getMockAccount(accountId = 1, authenticatorType = AuthenticatorType.Directory)
 
       val result = for {
         _ <- accountRepository.addAccount(dummyAccount)
@@ -51,13 +51,13 @@ class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Mat
 
   "verifyAccountById" should {
     "verifies an account" in {
-      val dummyAccount = getMockAccount(id = 1, verified = false)
+      val dummyAccount = getMockAccount(accountId = 1, verified = false)
       val accountRepository = new AccountRepository(Some(getPGDatabase))
 
       val result = for {
         addedAccount <- accountRepository.addAccount(dummyAccount)
-        updatedRows <- accountRepository.verifyAccountById(addedAccount.id)
-        updatedAccount <- accountRepository.getAccountById(addedAccount.id)
+        updatedRows <- accountRepository.verifyAccountById(addedAccount.accountId)
+        updatedAccount <- accountRepository.getAccountById(addedAccount.accountId)
       } yield (updatedRows, updatedAccount)
 
       result.map { tuple =>
