@@ -25,7 +25,7 @@ object Account {
 
     implicit val encodeAccount: Encoder[Account] = new Encoder[Account] {
       final def apply(a: Account): Json = Json.obj(
-        ("id", Json.fromLong(a.accountId)),
+        ("accountId", Json.fromLong(a.accountId)),
         ("username", Json.fromString(a.username)),
         ("email", Json.fromString(a.email)),
         ("firstname", Json.fromString(a.firstname)),
@@ -47,7 +47,7 @@ object Account {
     implicit val decodeAccount: Decoder[Account] = new Decoder[Account] {
       final def apply(c: HCursor): Decoder.Result[Account] =
         for {
-          id <- c.downField("id").as[Long]
+          accountId <- c.downField("accountId").as[Long]
           username <- c.downField("username").as[String]
           email <- c.downField("email").as[String]
           firstname <- c.downField("firstname").as[String]
@@ -58,7 +58,7 @@ object Account {
           verified <- c.downField("verified").as[Boolean]
           passwordHash <- c.downField("passwordHash").as[Option[String]]
         } yield Account(
-          id,
+          accountId,
           username,
           email,
           firstname,

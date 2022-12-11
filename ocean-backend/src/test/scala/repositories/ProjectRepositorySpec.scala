@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 
 class ProjectRepositorySpec
-    extends TestDatabase
+    extends TestDatabase("projects")
     with AsyncWordSpecLike
     with Matchers
     with BeforeAndAfterEach
@@ -70,7 +70,7 @@ class ProjectRepositorySpec
   }
 
   "getProjectById" should {
-    "return the project by id" in {
+    "return the project by projectId" in {
       val projectRepository = new ProjectRepository(Some(getPGDatabase))
       val accountRepository = new AccountRepository(Some(getPGDatabase))
       val mockAccount = getMockAccount()

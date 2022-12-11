@@ -7,7 +7,11 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 
-class AccountRepositorySpec extends TestDatabase with AsyncWordSpecLike with Matchers with BeforeAndAfterEach {
+class AccountRepositorySpec
+    extends TestDatabase("accounts")
+    with AsyncWordSpecLike
+    with Matchers
+    with BeforeAndAfterEach {
 
   import utils.TestMockUtils._
 

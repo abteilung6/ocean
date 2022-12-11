@@ -3,7 +3,8 @@ package repositories.utils
 
 import repositories.dto.{ Account, AuthenticatorType }
 import repositories.dto.auth.RegisterAccountRequest
-import repositories.dto.project.Project
+import repositories.dto.project.{ Member, MemberState, Project, RoleType }
+
 import java.time.Instant
 
 object TestMockUtils {
@@ -11,7 +12,7 @@ object TestMockUtils {
   def getMockAccount(
     accountId: Long = 0L,
     username: String = "username1",
-    email: String = "username1@localhost",
+    email: String = "username1@localhost.com",
     firstname: String = "firstname1",
     lastname: String = "lastname2",
     employeeType: String = "student",
@@ -50,4 +51,13 @@ object TestMockUtils {
     ownerId: Long = 0L
   ): Project =
     Project(projectId, name, description, createdAt, ownerId)
+
+  def getMockMember(
+    memberId: Long = 0L,
+    roleType: RoleType = RoleType.Developer,
+    state: MemberState = MemberState.Active,
+    projectId: Long = 0L,
+    accountId: Long = 0L,
+    createdAt: Instant = Instant.now()
+  ): Member = Member(memberId, roleType, state, projectId, accountId, createdAt)
 }
