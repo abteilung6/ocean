@@ -118,6 +118,34 @@ class MemberRepository(patchDatabase: Option[Database] = None) {
     }
   }
 
+  def getMemberByAccountId(accountId: Long): Future[Option[MemberResponse]] = {
+    val query = members
+      .filter(_.accountId === accountId)
+      .join(accounts)
+      .on(_.accountId === _.accountId)
+      .join(projects)
+      .on(_._1.projectId === _.projectId)
+      .map { case ((member, account), project) =>
+        (
+          member.memberId,
+          member.roleType,
+          member.state,
+          member.createdAt,
+          account.accountId,
+          account.username,
+          account.authenticatorType,
+          account.email,
+          project.projectId,
+          project.name
+        )
+      }
+    db.run(
+      query.result.headOption
+    ).map { future =>
+      future.map(parameters => (MemberResponse.apply _).tupled(parameters))
+    }
+  }
+
   def getMembersByProjectId(projectId: Long): Future[Seq[MemberResponse]] = {
     val query = members
       .filter(_.projectId === projectId)

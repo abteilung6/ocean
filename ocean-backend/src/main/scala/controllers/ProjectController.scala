@@ -11,14 +11,17 @@ import sttp.tapir.server.ServerEndpoint
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import endpoints.EndpointController
-import repositories.dto.project.{ CreateProjectRequest, Project }
+import repositories.dto.project.{ CreateMemberRequest, CreateProjectRequest, Project, RoleType }
 import repositories.dto.Account
-import services.ProjectService
+import services.{ MemberService, ProjectService }
 import akka.http.scaladsl.model.StatusCodes
 import repositories.dto.response.ResponseError
 
-class ProjectController(endpointController: EndpointController, projectService: ProjectService)
-    extends BaseController
+class ProjectController(
+  endpointController: EndpointController,
+  projectService: ProjectService,
+  memberService: MemberService
+) extends BaseController
     with FailFastCirceSupport {
 
   import repositories.dto.project.Project.Implicits._
@@ -41,13 +44,18 @@ class ProjectController(endpointController: EndpointController, projectService: 
       .in(jsonBody[CreateProjectRequest])
       .out(jsonBody[Project])
       .serverLogic { (account: Account) => createProjectRequest =>
-        projectService
-          .createProject(createProjectRequest, account)
-          .map { project =>
-            Right(project)
-          }
-          .recover { case e: ProjectService.Exceptions.ProjectAlreadyExistsException =>
+        val futureProject = for {
+          project <- projectService.createProject(createProjectRequest, account)
+          _ <- memberService.createMember(
+            CreateMemberRequest(project.projectId, account.accountId, RoleType.Admin),
+            account,
+            forOwner = true
+          )
+        } yield project
+        futureProject.map(project => Right(project)).recover {
+          case e: ProjectService.Exceptions.ProjectAlreadyExistsException =>
             Left(ResponseError(StatusCodes.BadRequest.intValue, e.message))
-          }
+          case _ => Left(ResponseError(StatusCodes.InternalServerError.intValue, "Something went wrong"))
+        }
       }
 }

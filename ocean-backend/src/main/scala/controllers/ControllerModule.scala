@@ -15,9 +15,10 @@ class ControllerModule extends ServiceModule {
   lazy val accountController: AccountController = wire[AccountController]
   lazy val projectController: ProjectController = wire[ProjectController]
   lazy val endpointController: EndpointController = wire[EndpointController]
+  lazy val memberController: MemberController = wire[MemberController]
 
-  def routes: Route = authController.route ~ accountController.route ~ projectController.route
+  def routes: Route = authController.route ~ accountController.route ~ projectController.route ~ memberController.route
 
   def endpoints: List[AnyEndpoint] =
-    authController.endpoints ++ accountController.endpoints ++ projectController.endpoints
+    authController.endpoints ++ accountController.endpoints ++ projectController.endpoints ++ memberController.endpoints
 }

@@ -3,7 +3,7 @@ package repositories.utils
 
 import repositories.dto.{ Account, AuthenticatorType }
 import repositories.dto.auth.RegisterAccountRequest
-import repositories.dto.project.{ Member, MemberState, Project, RoleType }
+import repositories.dto.project.{ CreateMemberRequest, Member, MemberResponse, MemberState, Project, RoleType }
 
 import java.time.Instant
 
@@ -60,4 +60,36 @@ object TestMockUtils {
     accountId: Long = 0L,
     createdAt: Instant = Instant.now()
   ): Member = Member(memberId, roleType, state, projectId, accountId, createdAt)
+
+  def getMockMemberResponse(
+    memberId: Long = 0L,
+    roleType: RoleType = RoleType.Developer,
+    state: MemberState = MemberState.Active,
+    createdAt: Instant = Instant.now(),
+    accountId: Long = 0L,
+    accountUsername: String = "username",
+    accountAuthenticatorType: AuthenticatorType = AuthenticatorType.Credentials,
+    accountEmail: String = "alice@bob.com",
+    projectId: Long = 0L,
+    projectName: String = "my-project-1"
+  ): MemberResponse =
+    MemberResponse(
+      memberId,
+      roleType,
+      state,
+      createdAt,
+      accountId,
+      accountUsername,
+      accountAuthenticatorType,
+      accountEmail,
+      projectId,
+      projectName
+    )
+
+  def getMockCreateMemberRequest(
+    projectId: Long = 0L,
+    accountId: Long = 0L,
+    roleType: RoleType = RoleType.Developer
+  ): CreateMemberRequest =
+    CreateMemberRequest(projectId, accountId, roleType)
 }

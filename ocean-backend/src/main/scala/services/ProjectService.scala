@@ -1,14 +1,14 @@
 package org.abteilung6.ocean
 package services
 
-import repositories.ProjectRepository
+import repositories.{ MemberRepository, ProjectRepository }
 import repositories.dto.Account
 import repositories.dto.project.{ CreateProjectRequest, Project }
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ProjectService(projectRepository: ProjectRepository) {
+class ProjectService(projectRepository: ProjectRepository, memberRepository: MemberRepository) {
 
   import ProjectService.Exceptions._
 

@@ -1,8 +1,9 @@
 package org.abteilung6.ocean
 package repositories.dto.project
 
+import io.circe.{ Decoder, Encoder }
+import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 import repositories.dto.AuthenticatorType
-
 import java.time.Instant
 
 case class MemberResponse(
@@ -13,6 +14,7 @@ case class MemberResponse(
   roleType: RoleType,
   state: MemberState,
   createdAt: Instant,
+
   /**
    * Account
    */
@@ -20,9 +22,17 @@ case class MemberResponse(
   accountUsername: String,
   accountAuthenticatorType: AuthenticatorType,
   accountEmail: String,
+
   /**
    * Project
    */
   projectId: Long,
   projectName: String
 )
+
+object MemberResponse {
+  object Implicits {
+    implicit val memberResponseDecoder: Decoder[MemberResponse] = deriveDecoder
+    implicit val memberResponseEncoder: Encoder[MemberResponse] = deriveEncoder
+  }
+}

@@ -11,3 +11,15 @@ case class Member(
   accountId: Long,
   createdAt: Instant
 )
+
+object Member {
+  def fromCreateMemberRequest(createMemberRequest: CreateMemberRequest): Member =
+    Member(
+      0L,
+      createMemberRequest.roleType,
+      MemberState.Pending,
+      createMemberRequest.projectId,
+      createMemberRequest.accountId,
+      Instant.now()
+    )
+}
