@@ -149,7 +149,7 @@ class AuthController(
   val verifyEndpoint: PublicEndpoint[String, ResponseError, Account, Any] =
     endpoint.get
       .tag(tag)
-      .description("Verify you account")
+      .description("Verify your account")
       .in(this.toRelativeEndpoint("verify"))
       .in(query[String]("token"))
       .errorOut(jsonBody[ResponseError])

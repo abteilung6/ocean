@@ -1,7 +1,7 @@
 package org.abteilung6.ocean
 package services
 
-import repositories.dto.project.{ CreateMemberRequest, Member, MemberState, RoleType }
+import repositories.dto.project.{ CreateMemberRequest, Member, MemberState, MemberVerificationTokenContent, RoleType }
 import repositories.utils.TestMockUtils.{ getMockAccount, getMockMemberResponse, getMockProject }
 import repositories.{ MemberRepository, ProjectRepository }
 import services.MemberService.Exceptions.{
@@ -9,6 +9,7 @@ import services.MemberService.Exceptions.{
   MemberExistsException,
   ProjectDoesNotExistException
 }
+
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{ any, anyLong }
 import org.mockito.Mockito.when
@@ -16,6 +17,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 import org.scalatestplus.mockito.MockitoSugar
+
 import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
 
 class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSugar with BeforeAndAfterEach {
@@ -238,6 +240,27 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
       memberService.createMember(createMemberRequest, invitorAccount).failed.map { exception =>
         exception.isInstanceOf[MemberExistsException] shouldBe true
         exception.getMessage shouldBe s"Account is already member of this project."
+      }
+    }
+  }
+
+  "acceptMember" should {
+    "return accepted member" in {
+      val invitedMember = getMockMemberResponse(state = MemberState.Pending)
+      val acceptedMember = getMockMemberResponse(state = MemberState.Active)
+      val project = getMockProject()
+      val memberVerificationTokenContent = MemberVerificationTokenContent("", invitedMember.memberId)
+      val memberService = createMemberService()
+
+      when(defaultMemberRepository.getMemberById(ArgumentMatchers.eq(invitedMember.memberId)))
+        .thenReturn(Future(Some(invitedMember)))
+      when(defaultMemberRepository.acceptMemberById(ArgumentMatchers.eq(invitedMember.memberId)))
+        .thenReturn(Future(Some(acceptedMember)))
+      when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(project.projectId)))
+        .thenReturn(Future(Some(project)))
+
+      memberService.acceptMember(memberVerificationTokenContent).map { memberResponse =>
+        memberResponse shouldBe acceptedMember
       }
     }
   }

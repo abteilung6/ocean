@@ -114,4 +114,17 @@ class JwtService(runtimeConfig: RuntimeConfig) {
     )
     JwtCirce.encode(claim, key, algorithm)
   }
+
+  def decodeMemberVerificationTokenContent(
+    verifyToken: String,
+    currentTimestamp: Long
+  ): Option[MemberVerificationTokenContent] = {
+    import io.circe.parser.decode
+    import repositories.dto.project.MemberVerificationTokenContent.Implicits._
+
+    val optClaim = JwtCirce.decode(verifyToken, key, Seq(JwtAlgorithm.HS256)).toOption
+    optClaim
+      .filter(jwtClaim => jwtClaim.expiration.exists(_ >= currentTimestamp))
+      .flatMap(jwtClaim => decode[MemberVerificationTokenContent](jwtClaim.content).toOption)
+  }
 }

@@ -4,7 +4,7 @@ package controllers
 import controllers.endpoints.EndpointController
 import controllers.utils.TestEndpointController.createEndpointController
 import repositories.dto.Account
-import repositories.dto.project.MemberResponse
+import repositories.dto.project.{ MemberResponse, MemberVerificationTokenContent }
 import repositories.utils.TestMockUtils.{ getMockAccount, getMockCreateMemberRequest, getMockMemberResponse }
 import services.{ EmailService, JwtService, MemberService }
 import akka.http.scaladsl.model.ContentTypes.`application/json`
@@ -16,7 +16,7 @@ import repositories.dto.response.ResponseError
 import services.EmailService.Mail
 import org.abteilung6.ocean.utils.{ RuntimeConfig, ServerBindingConfig }
 import org.mockito.ArgumentMatchers
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{ any, anyLong }
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
@@ -58,16 +58,15 @@ class MemberControllerSpec
     new MemberController(endpointController, memberService, emailService, jwtService, runtimeConfig)
   }
 
-  "create member endpoint" should {
-    import repositories.dto.project.CreateMemberRequest.Implicits._
-    import repositories.dto.project.MemberResponse.Implicits._
-    import repositories.dto.response.ResponseError.Implicits._
+  import io.circe.syntax._
+  import repositories.dto.project.CreateMemberRequest.Implicits._
+  import repositories.dto.project.MemberResponse.Implicits._
+  import repositories.dto.response.ResponseError.Implicits._
 
-    import io.circe.syntax._
+  "create member endpoint" should {
 
     "return the created project" in {
-      val memberController =
-        createMemberController(memberService = defaultMemberService)
+      val memberController = createMemberController()
       val createMemberRequest = getMockCreateMemberRequest()
       val httpEntity = HttpEntity(`application/json`, createMemberRequest.asJson.spaces2)
       val memberResponse = getMockMemberResponse()
@@ -117,5 +116,67 @@ class MemberControllerSpec
         }
       }
     }
+  }
+
+  "accept member endpoint" should {
+    "return the accepted member" in {
+      val token = "ey.."
+      val memberVerificationTokenContent = MemberVerificationTokenContent("member", 0L)
+      val memberResponse = getMockMemberResponse()
+      val memberController = createMemberController()
+
+      when(defaultJwtService.decodeMemberVerificationTokenContent(ArgumentMatchers.eq(token), anyLong()))
+        .thenReturn(Some(memberVerificationTokenContent))
+      when(defaultMemberService.acceptMember(ArgumentMatchers.eq(memberVerificationTokenContent)))
+        .thenReturn(Future(memberResponse))
+
+      Get(memberController.toRelativeURI("accept", parameters = Map("token" -> token))) ~>
+        memberController.route ~> check {
+          status shouldBe StatusCodes.OK
+          responseAs[MemberResponse] shouldBe memberResponse
+        }
+    }
+
+    "return ErrorResponse if tokeType is not member" in {
+      val token = "ey.."
+      val memberVerificationTokenContent = MemberVerificationTokenContent("NOT_MEMBER", 0L)
+      val memberController = createMemberController()
+
+      when(defaultJwtService.decodeMemberVerificationTokenContent(ArgumentMatchers.eq(token), anyLong()))
+        .thenReturn(Some(memberVerificationTokenContent))
+
+      Get(memberController.toRelativeURI("accept", parameters = Map("token" -> token))) ~>
+        memberController.route ~> check {
+          val responseError = responseAs[ResponseError]
+          responseError.statusCode shouldBe StatusCodes.BadRequest.intValue
+          status shouldBe StatusCodes.BadRequest
+        }
+    }
+
+    List(
+      Tuple2(MemberService.Exceptions.MemberAlreadyExistException(), StatusCodes.BadRequest),
+      Tuple2(MemberService.Exceptions.MemberDoesNotExistException(), StatusCodes.BadRequest),
+      Tuple2(MemberService.Exceptions.ProjectDoesNotExistException(), StatusCodes.BadRequest),
+      Tuple2(new Exception(), StatusCodes.InternalServerError)
+    ).foreach { case (exception, statusCode) =>
+      s"return ErrorResponse with statusCode ${statusCode} for exception ${exception.toString}" in {
+        val token = "ey.."
+        val memberVerificationTokenContent = MemberVerificationTokenContent("member", 0L)
+        val memberController = createMemberController()
+
+        when(defaultJwtService.decodeMemberVerificationTokenContent(ArgumentMatchers.eq(token), anyLong()))
+          .thenReturn(Some(memberVerificationTokenContent))
+        when(defaultMemberService.acceptMember(ArgumentMatchers.eq(memberVerificationTokenContent)))
+          .thenReturn(Future.failed(exception))
+
+        Get(memberController.toRelativeURI("accept", parameters = Map("token" -> token))) ~>
+          memberController.route ~> check {
+            val responseError = responseAs[ResponseError]
+            responseError.statusCode shouldBe statusCode.intValue
+            status shouldBe StatusCodes.BadRequest
+          }
+      }
+    }
+
   }
 }

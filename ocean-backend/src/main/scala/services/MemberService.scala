@@ -4,7 +4,14 @@ package services
 import repositories.MemberRepository
 import repositories.ProjectRepository
 import repositories.dto.Account
-import repositories.dto.project.{ CreateMemberRequest, Member, MemberResponse, MemberState, RoleType }
+import repositories.dto.project.{
+  CreateMemberRequest,
+  Member,
+  MemberResponse,
+  MemberState,
+  MemberVerificationTokenContent,
+  RoleType
+}
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ Await, Future }
@@ -43,7 +50,7 @@ class MemberService(memberRepository: MemberRepository, projectRepository: Proje
     }
 
     // Acting as project member
-    if (invitorOpt.isEmpty) {
+    if (invitorOpt.isEmpty || invitorOpt.get.state != MemberState.Active) {
       Future.failed(InsufficientPermissionException("You are not a member of this project."))
     } else if (invitorOpt.get.roleType != RoleType.Admin) {
       Future.failed(
@@ -59,6 +66,24 @@ class MemberService(memberRepository: MemberRepository, projectRepository: Proje
       memberRepository.addMember(Member.fromCreateMemberRequest(createMemberRequest))
     }
   }
+
+  def acceptMember(memberVerificationTokenContent: MemberVerificationTokenContent): Future[MemberResponse] =
+    for {
+      invitedMember <- memberRepository.getMemberById(memberVerificationTokenContent.memberId).flatMap {
+        case Some(memberResponse) if memberResponse.state == MemberState.Pending => Future(memberResponse)
+        case Some(memberResponse) if memberResponse.state == MemberState.Active =>
+          Future.failed(MemberAlreadyExistException())
+        case _ => Future.failed(MemberDoesNotExistException())
+      }
+      _ <- projectRepository.getProjectById(invitedMember.projectId).flatMap {
+        case Some(project) => Future(project)
+        case None          => Future.failed(ProjectDoesNotExistException())
+      }
+      acceptedMember <- memberRepository.acceptMemberById(invitedMember.memberId).flatMap {
+        case Some(member) => Future(member)
+        case None         => Future.failed(MemberDoesNotExistException())
+      }
+    } yield acceptedMember
 }
 
 object MemberService {
@@ -71,6 +96,12 @@ object MemberService {
     case class MemberExistsException(message: String = "Member already exists") extends MemberServiceException(message)
 
     case class ProjectDoesNotExistException(message: String = "Project does not exists")
+        extends MemberServiceException(message)
+
+    case class MemberDoesNotExistException(message: String = "Member does not exist")
+        extends MemberServiceException(message)
+
+    case class MemberAlreadyExistException(message: String = "Account is already member of the project")
         extends MemberServiceException(message)
   }
 }
