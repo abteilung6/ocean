@@ -29,9 +29,15 @@ class MemberService(memberRepository: MemberRepository, projectRepository: Proje
     val projectOpt =
       Await.result(projectRepository.getProjectById(createMemberRequest.projectId), Duration(5, TimeUnit.SECONDS))
     val invitorOpt =
-      Await.result(memberRepository.getMemberByAccountId(account.accountId), Duration(5, TimeUnit.SECONDS))
+      Await.result(
+        memberRepository.getMemberByAccountId(account.accountId, createMemberRequest.projectId),
+        Duration(5, TimeUnit.SECONDS)
+      )
     val invitedOpt =
-      Await.result(memberRepository.getMemberByAccountId(createMemberRequest.accountId), Duration(5, TimeUnit.SECONDS))
+      Await.result(
+        memberRepository.getMemberByAccountId(createMemberRequest.accountId, createMemberRequest.projectId),
+        Duration(5, TimeUnit.SECONDS)
+      )
 
     if (projectOpt.isEmpty) {
       return Future.failed(ProjectDoesNotExistException())

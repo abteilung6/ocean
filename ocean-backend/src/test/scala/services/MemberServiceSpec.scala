@@ -48,7 +48,7 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
 
       when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(0L)))
         .thenReturn(Future(None))
-      when(defaultMemberRepository.getMemberByAccountId(anyLong()))
+      when(defaultMemberRepository.getMemberByAccountId(anyLong(), anyLong()))
         .thenReturn(Future(Some(mockMemberResponse)))
 
       memberService.createMember(createMemberRequest, invitorAccount).failed.map { exception =>
@@ -71,7 +71,7 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
 
       when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(mockProject.projectId)))
         .thenReturn(Future(Some(mockProject)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId), anyLong()))
         .thenReturn(Future(None))
       when(defaultMemberRepository.addMember(any[Member]()))
         .thenReturn(Future(mockMemberResponse))
@@ -90,7 +90,7 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
 
       when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(mockProject.projectId)))
         .thenReturn(Future(Some(mockProject)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId), anyLong()))
         .thenReturn(Future(None))
 
       memberService.createMember(createMemberRequest, invitorAccount, forOwner = true).failed.map { exception =>
@@ -117,9 +117,9 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
 
       when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(mockProject.projectId)))
         .thenReturn(Future(Some(mockProject)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId), anyLong()))
         .thenReturn(Future(Some(invitorMemberResponse)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitedAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitedAccount.accountId), anyLong()))
         .thenReturn(Future(Some(invitedMemberResponse)))
 
       memberService.createMember(createMemberRequest, invitorAccount).failed.map { exception =>
@@ -148,9 +148,9 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
 
       when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(mockProject.projectId)))
         .thenReturn(Future(Some(mockProject)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(mockAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(mockAccount.accountId), anyLong()))
         .thenReturn(Future(Some(invitorMemberResponse)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitedAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitedAccount.accountId), anyLong()))
         .thenReturn(Future(None))
       when(defaultMemberRepository.addMember(any[Member]()))
         .thenReturn(Future(invitedMemberResponse))
@@ -176,9 +176,9 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
 
       when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(mockProject.projectId)))
         .thenReturn(Future(Some(mockProject)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId), anyLong()))
         .thenReturn(Future(None))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitedAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitedAccount.accountId), anyLong()))
         .thenReturn(Future(Some(invitedMemberResponse)))
 
       memberService.createMember(createMemberRequest, invitorAccount).failed.map { exception =>
@@ -202,9 +202,9 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
 
       when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(mockProject.projectId)))
         .thenReturn(Future(Some(mockProject)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId), anyLong()))
         .thenReturn(Future(Some(invitorMemberResponse)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitedAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitedAccount.accountId), anyLong()))
         .thenReturn(Future(None))
 
       memberService.createMember(createMemberRequest, invitorAccount).failed.map { exception =>
@@ -232,9 +232,9 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
 
       when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(mockProject.projectId)))
         .thenReturn(Future(Some(mockProject)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitorAccount.accountId), anyLong()))
         .thenReturn(Future(Some(invitorMemberResponse)))
-      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitedAccount.accountId)))
+      when(defaultMemberRepository.getMemberByAccountId(ArgumentMatchers.eq(invitedAccount.accountId), anyLong()))
         .thenReturn(Future(Some(invitedMemberResponse)))
 
       memberService.createMember(createMemberRequest, invitorAccount).failed.map { exception =>
