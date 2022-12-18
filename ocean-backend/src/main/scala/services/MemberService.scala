@@ -51,7 +51,8 @@ class MemberService(memberRepository: MemberRepository, projectRepository: Proje
       } else if (invitedOpt.isDefined) {
         return Future.failed(MemberExistsException("Owner is already a project member."))
       } else {
-        return memberRepository.addMember(Member.fromCreateMemberRequest(createMemberRequest))
+        // Skip mail verification with member state active
+        return memberRepository.addMember(Member.fromCreateMemberRequest(createMemberRequest, MemberState.Active))
       }
     }
 
@@ -69,7 +70,7 @@ class MemberService(memberRepository: MemberRepository, projectRepository: Proje
     } else if (invitedOpt.isDefined && invitedOpt.get.state == MemberState.Pending) {
       Future(invitedOpt.get)
     } else {
-      memberRepository.addMember(Member.fromCreateMemberRequest(createMemberRequest))
+      memberRepository.addMember(Member.fromCreateMemberRequest(createMemberRequest, MemberState.Pending))
     }
   }
 

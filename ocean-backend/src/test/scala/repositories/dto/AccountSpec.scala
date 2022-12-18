@@ -34,7 +34,10 @@ class AccountSpec extends AnyWordSpec with Matchers with MockitoSugar with Eithe
 
     "encode" in {
       import io.circe.syntax._
-      dummyAccount.asJson.spaces2 shouldBe accountString
+      dummyAccount.asJson.spaces2.stripMargin
+        .filter(_ >= ' ') shouldBe
+        accountString
+          .filter(_ >= ' ')
     }
 
     "decode" in {
