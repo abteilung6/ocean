@@ -20,7 +20,7 @@ class DBMigrationCommandSpec extends AnyWordSpec with Matchers {
       result.success shouldBe true
       // We check the migrations count here.
       // So every new forward migration expects an increased value here.
-      result.migrationsExecuted shouldBe 2
+      result.migrationsExecuted shouldBe 3
     }
   }
 }

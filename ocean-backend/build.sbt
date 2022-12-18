@@ -9,7 +9,8 @@ lazy val root = (project in file("."))
     idePackagePrefix := Some("org.abteilung6.ocean"),
     libraryDependencies ++= coreDependencies ++ akkaDependencies ++ logDependencies ++ testDependencies,
     fullRunTask(runMigrate, Compile, "org.abteilung6.ocean.db.DBMigrateCommand"),
-    fork / runMigrate := true
+    fork / runMigrate := true,
+    Global / concurrentRestrictions += Tags.limit(Tags.Test, 1)
   )
 
 lazy val runMigrate = taskKey[Unit]("Migrates the database schema.")

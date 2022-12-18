@@ -42,7 +42,7 @@ class AuthServiceSpec extends AnyWordSpec with Matchers with MockitoSugar {
           jwtService = jwtServiceMock
         )
       val userEntry = UserEntry("uid", "name", "givenName", "sn", "mail", "employeeType", "accountExpires")
-      val dummyAccount = getMockAccount(id = 1)
+      val dummyAccount = getMockAccount(accountId = 1)
       val authResponseMock = AuthResponse("ey.accessToken", "ey.refreshToken")
 
       when(directoryServiceMock.authenticate(anyString(), anyString()))
@@ -78,7 +78,11 @@ class AuthServiceSpec extends AnyWordSpec with Matchers with MockitoSugar {
       val jwtServiceMock = mock[JwtService]
       val authService = createAuthService(accountRepository = accountRepositoryMock, jwtService = jwtServiceMock)
       val mockAccount =
-        getMockAccount(id = 1, authenticatorType = AuthenticatorType.Credentials, passwordHash = Some(passwordHash))
+        getMockAccount(
+          accountId = 1,
+          authenticatorType = AuthenticatorType.Credentials,
+          passwordHash = Some(passwordHash)
+        )
       val mockAuthResponse = AuthResponse("ey.accessToken", "ey.refreshToken")
 
       when(accountRepositoryMock.getAccountByUsername(anyString(), ArgumentMatchers.eq(AuthenticatorType.Credentials)))
@@ -97,7 +101,7 @@ class AuthServiceSpec extends AnyWordSpec with Matchers with MockitoSugar {
       val accountRepositoryMock = mock[AccountRepository]
       val authService = createAuthService(accountRepository = accountRepositoryMock)
       val registerAccountRequest = getMockRegisterAccountRequest()
-      val mockAccount = getMockAccount(id = 1)
+      val mockAccount = getMockAccount(accountId = 1)
 
       when(accountRepositoryMock.addAccount(any()))
         .thenReturn(Future(mockAccount))

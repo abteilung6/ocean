@@ -2,6 +2,7 @@ package org.abteilung6.ocean
 package services
 
 import utils.{ JwtConfig, RuntimeConfig }
+
 import io.circe.Encoder
 import repositories.dto.auth.{
   AccessTokenContent,
@@ -10,6 +11,8 @@ import repositories.dto.auth.{
   RefreshTokenContent,
   VerificationTokenContent
 }
+
+import org.abteilung6.ocean.repositories.dto.project.MemberVerificationTokenContent
 import pdi.jwt.algorithms.JwtHmacAlgorithm
 import pdi.jwt.{ JwtAlgorithm, JwtCirce, JwtClaim }
 
@@ -95,5 +98,33 @@ class JwtService(runtimeConfig: RuntimeConfig) {
     optClaim
       .filter(jwtClaim => jwtClaim.expiration.exists(_ >= currentTimestamp))
       .flatMap(jwtClaim => decode[VerificationTokenContent](jwtClaim.content).toOption)
+  }
+
+  def encodeMemberVerificationTokenContent(
+    memberVerificationTokenContent: MemberVerificationTokenContent,
+    currentTimestamp: Long
+  ): String = {
+    import io.circe.syntax._
+    import repositories.dto.project.MemberVerificationTokenContent.Implicits._
+
+    val claim = JwtClaim(
+      content = memberVerificationTokenContent.asJson.toString(),
+      expiration = Some(currentTimestamp + verificationExpirationTimeInSeconds),
+      issuedAt = Some(currentTimestamp)
+    )
+    JwtCirce.encode(claim, key, algorithm)
+  }
+
+  def decodeMemberVerificationTokenContent(
+    verifyToken: String,
+    currentTimestamp: Long
+  ): Option[MemberVerificationTokenContent] = {
+    import io.circe.parser.decode
+    import repositories.dto.project.MemberVerificationTokenContent.Implicits._
+
+    val optClaim = JwtCirce.decode(verifyToken, key, Seq(JwtAlgorithm.HS256)).toOption
+    optClaim
+      .filter(jwtClaim => jwtClaim.expiration.exists(_ >= currentTimestamp))
+      .flatMap(jwtClaim => decode[MemberVerificationTokenContent](jwtClaim.content).toOption)
   }
 }

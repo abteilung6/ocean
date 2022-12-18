@@ -178,7 +178,10 @@ class AuthControllerSpec
       when(authServiceMock.registerWithCredentials(ArgumentMatchers.eq(registerAccountRequest)))
         .thenReturn(Future(account))
       when(
-        jwtService.encodeVerificationTokenContent(ArgumentMatchers.eq(VerificationTokenContent(account.id)), anyLong())
+        jwtService.encodeVerificationTokenContent(
+          ArgumentMatchers.eq(VerificationTokenContent(account.accountId)),
+          anyLong()
+        )
       )
         .thenReturn(verificationToken)
       when(emailService.sendRegistrationVerification(ArgumentMatchers.eq(account), anyString()))
@@ -219,14 +222,14 @@ class AuthControllerSpec
       val authServiceMock: AuthService = mock[AuthService]
       val jwtServiceMock: JwtService = mock[JwtService]
       val authController = createAuthController(authService = authServiceMock, jwtService = jwtServiceMock)
-      val unverifiedAccount = getMockAccount(id = 2L, verified = false)
-      val verifiedAccount = getMockAccount(id = 2L, verified = true)
-      val verificationTokenContent = VerificationTokenContent(unverifiedAccount.id)
+      val unverifiedAccount = getMockAccount(accountId = 2L, verified = false)
+      val verifiedAccount = getMockAccount(accountId = 2L, verified = true)
+      val verificationTokenContent = VerificationTokenContent(unverifiedAccount.accountId)
       val token = "ey.abc.def"
 
       when(jwtServiceMock.decodeVerificationTokenContent(ArgumentMatchers.eq(token), anyLong()))
         .thenReturn(Some(verificationTokenContent))
-      when(authServiceMock.verifyAccount(ArgumentMatchers.eq(unverifiedAccount.id)))
+      when(authServiceMock.verifyAccount(ArgumentMatchers.eq(unverifiedAccount.accountId)))
         .thenReturn(Future(Some(verifiedAccount)))
 
       Get(authController.toRelativeURI("verify", parameters = Map("token" -> token))) ~>

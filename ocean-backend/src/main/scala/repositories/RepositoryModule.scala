@@ -12,4 +12,5 @@ trait RepositoryModule extends UtilsModule {
 
   lazy val accountRepository: AccountRepository = wire[AccountRepository]
   lazy val projectRepository: ProjectRepository = wire[ProjectRepository]
+  lazy val memberRepository: MemberRepository = wire[MemberRepository]
 }

@@ -134,7 +134,7 @@ class AuthController(
 
   private def sendRegistrationVerificationMail(account: Account): Unit = {
     val token =
-      jwtService.encodeVerificationTokenContent(VerificationTokenContent(account.id), Instant.now.getEpochSecond)
+      jwtService.encodeVerificationTokenContent(VerificationTokenContent(account.accountId), Instant.now.getEpochSecond)
     val serviceBindingConfig = runtimeConfig.serverBindingConfig
     val verificationUrl =
       this.toAbsoluteURI(
@@ -149,7 +149,7 @@ class AuthController(
   val verifyEndpoint: PublicEndpoint[String, ResponseError, Account, Any] =
     endpoint.get
       .tag(tag)
-      .description("Verify you account")
+      .description("Verify your account")
       .in(this.toRelativeEndpoint("verify"))
       .in(query[String]("token"))
       .errorOut(jsonBody[ResponseError])

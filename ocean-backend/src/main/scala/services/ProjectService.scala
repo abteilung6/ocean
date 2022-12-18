@@ -1,18 +1,20 @@
 package org.abteilung6.ocean
 package services
 
-import repositories.ProjectRepository
+import repositories.{ MemberRepository, ProjectRepository }
 import repositories.dto.Account
 import repositories.dto.project.{ CreateProjectRequest, Project }
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ProjectService(projectRepository: ProjectRepository) {
+class ProjectService(projectRepository: ProjectRepository, memberRepository: MemberRepository) {
+
   import ProjectService.Exceptions._
 
   def createProject(createProjectRequest: CreateProjectRequest, account: Account): Future[Project] = {
-    val project = Project(0L, createProjectRequest.name, createProjectRequest.description, Instant.now(), account.id)
+    val project =
+      Project(0L, createProjectRequest.name, createProjectRequest.description, Instant.now(), account.accountId)
     projectRepository.addProject(project).recoverWith { case _ => Future.failed(ProjectAlreadyExistsException()) }
   }
 }

@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 
 class ProjectRepositorySpec
-    extends TestDatabase
+    extends TestDatabase("projects")
     with AsyncWordSpecLike
     with Matchers
     with BeforeAndAfterEach
@@ -34,7 +34,7 @@ class ProjectRepositorySpec
 
       val futureProject = for {
         addedAccount <- accountRepository.addAccount(mockAccount)
-        addedProject <- projectRepository.addProject(getMockProject(ownerId = addedAccount.id))
+        addedProject <- projectRepository.addProject(getMockProject(ownerId = addedAccount.accountId))
       } yield addedProject
 
       futureProject.map { actual =>
@@ -59,8 +59,10 @@ class ProjectRepositorySpec
       recoverToSucceededIf[JdbcSQLIntegrityConstraintViolationException] {
         val futureProject = for {
           addedAccount <- accountRepository.addAccount(mockAccount)
-          addedProject <- projectRepository.addProject(getMockProject(name = "p1", ownerId = addedAccount.id))
-          duplicatedProject <- projectRepository.addProject(getMockProject(name = "p1", ownerId = addedAccount.id))
+          addedProject <- projectRepository.addProject(getMockProject(name = "p1", ownerId = addedAccount.accountId))
+          duplicatedProject <- projectRepository.addProject(
+            getMockProject(name = "p1", ownerId = addedAccount.accountId)
+          )
         } yield (addedProject, duplicatedProject)
         futureProject
       }
@@ -68,14 +70,14 @@ class ProjectRepositorySpec
   }
 
   "getProjectById" should {
-    "return the project by id" in {
+    "return the project by projectId" in {
       val projectRepository = new ProjectRepository(Some(getPGDatabase))
       val accountRepository = new AccountRepository(Some(getPGDatabase))
       val mockAccount = getMockAccount()
 
       val futureProject = for {
         addedAccount <- accountRepository.addAccount(mockAccount)
-        addedProject <- projectRepository.addProject(getMockProject(ownerId = addedAccount.id))
+        addedProject <- projectRepository.addProject(getMockProject(ownerId = addedAccount.accountId))
         returnedProject <- projectRepository.getProjectById(addedProject.projectId)
       } yield returnedProject
 
