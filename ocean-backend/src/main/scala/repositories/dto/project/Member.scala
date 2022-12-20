@@ -13,11 +13,11 @@ case class Member(
 )
 
 object Member {
-  def fromCreateMemberRequest(createMemberRequest: CreateMemberRequest): Member =
+  def fromCreateMemberRequest(createMemberRequest: CreateMemberRequest, memberState: MemberState): Member =
     Member(
       0L,
       createMemberRequest.roleType,
-      MemberState.Pending,
+      memberState,
       createMemberRequest.projectId,
       createMemberRequest.accountId,
       Instant.now()

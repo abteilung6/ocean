@@ -31,9 +31,45 @@ class ProjectController(
 
   override val basePath: String = "projects"
 
-  override def route: Route = AkkaHttpServerInterpreter().toRoute(List(createProjectEndpoint))
+  override def route: Route =
+    AkkaHttpServerInterpreter().toRoute(List(getProjectEndpoint, getProjectsEndpoint, createProjectEndpoint))
 
-  override def endpoints: List[AnyEndpoint] = List(createProjectEndpoint.endpoint)
+  override def endpoints: List[AnyEndpoint] =
+    List(getProjectEndpoint.endpoint, getProjectsEndpoint.endpoint, createProjectEndpoint.endpoint)
+
+  val getProjectsEndpoint: ServerEndpoint.Full[String, Account, Unit, ResponseError, Seq[Project], Any, Future] =
+    endpointController.secureEndpointWithUser.get
+      .tag(tag)
+      .description("List projects")
+      .in(basePath)
+      .out(jsonBody[Seq[Project]])
+      .serverLogic { (account: Account) => _ =>
+        projectService
+          .getProjects(account.accountId)
+          .map(projects => Right(projects))
+          .recover { case _ =>
+            Left(ResponseError(StatusCodes.InternalServerError.intValue, "Something went wrong"))
+          }
+      }
+
+  val getProjectEndpoint: ServerEndpoint.Full[String, Account, Long, ResponseError, Project, Any, Future] =
+    endpointController.secureEndpointWithUser.get
+      .tag(tag)
+      .description("Get a project")
+      .in(basePath / path[Long]("projectId"))
+      .out(jsonBody[Project])
+      .serverLogic { account => projectId =>
+        projectService
+          .getProject(account.accountId, projectId)
+          .map(project => Right(project))
+          .recover {
+            case e: ProjectService.Exceptions.ProjectDoesNotExistException =>
+              Left(ResponseError(StatusCodes.NotFound.intValue, e.getMessage))
+            case e: ProjectService.Exceptions.InsufficientPermissionException =>
+              Left(ResponseError(StatusCodes.Forbidden.intValue, e.getMessage))
+            case _ => Left(ResponseError(StatusCodes.InternalServerError.intValue, "Something went wrong"))
+          }
+      }
 
   val createProjectEndpoint
     : ServerEndpoint.Full[String, Account, CreateProjectRequest, ResponseError, Project, Any, Future] =
@@ -52,10 +88,12 @@ class ProjectController(
             forOwner = true
           )
         } yield project
-        futureProject.map(project => Right(project)).recover {
-          case e: ProjectService.Exceptions.ProjectAlreadyExistsException =>
-            Left(ResponseError(StatusCodes.BadRequest.intValue, e.message))
-          case _ => Left(ResponseError(StatusCodes.InternalServerError.intValue, "Something went wrong"))
-        }
+        futureProject
+          .map(project => Right(project))
+          .recover {
+            case e: ProjectService.Exceptions.ProjectAlreadyExistsException =>
+              Left(ResponseError(StatusCodes.BadRequest.intValue, e.message))
+            case _ => Left(ResponseError(StatusCodes.InternalServerError.intValue, "Something went wrong"))
+          }
       }
 }

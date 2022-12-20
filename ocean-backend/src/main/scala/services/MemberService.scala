@@ -29,9 +29,15 @@ class MemberService(memberRepository: MemberRepository, projectRepository: Proje
     val projectOpt =
       Await.result(projectRepository.getProjectById(createMemberRequest.projectId), Duration(5, TimeUnit.SECONDS))
     val invitorOpt =
-      Await.result(memberRepository.getMemberByAccountId(account.accountId), Duration(5, TimeUnit.SECONDS))
+      Await.result(
+        memberRepository.getMemberByAccountId(account.accountId, createMemberRequest.projectId),
+        Duration(5, TimeUnit.SECONDS)
+      )
     val invitedOpt =
-      Await.result(memberRepository.getMemberByAccountId(createMemberRequest.accountId), Duration(5, TimeUnit.SECONDS))
+      Await.result(
+        memberRepository.getMemberByAccountId(createMemberRequest.accountId, createMemberRequest.projectId),
+        Duration(5, TimeUnit.SECONDS)
+      )
 
     if (projectOpt.isEmpty) {
       return Future.failed(ProjectDoesNotExistException())
@@ -45,7 +51,8 @@ class MemberService(memberRepository: MemberRepository, projectRepository: Proje
       } else if (invitedOpt.isDefined) {
         return Future.failed(MemberExistsException("Owner is already a project member."))
       } else {
-        return memberRepository.addMember(Member.fromCreateMemberRequest(createMemberRequest))
+        // Skip mail verification with member state active
+        return memberRepository.addMember(Member.fromCreateMemberRequest(createMemberRequest, MemberState.Active))
       }
     }
 
@@ -63,7 +70,7 @@ class MemberService(memberRepository: MemberRepository, projectRepository: Proje
     } else if (invitedOpt.isDefined && invitedOpt.get.state == MemberState.Pending) {
       Future(invitedOpt.get)
     } else {
-      memberRepository.addMember(Member.fromCreateMemberRequest(createMemberRequest))
+      memberRepository.addMember(Member.fromCreateMemberRequest(createMemberRequest, MemberState.Pending))
     }
   }
 

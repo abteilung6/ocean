@@ -31,8 +31,8 @@ class AccountRepositorySpec
       val accountRepository = new AccountRepository(Some(getPGDatabase))
       val futureAccount = accountRepository.addAccount(dummyAccount)
 
-      futureAccount.map { actual =>
-        actual shouldEqual dummyAccount
+      futureAccount.map { addedAccount =>
+        addedAccount.username shouldBe dummyAccount.username
       }
     }
   }
@@ -47,8 +47,8 @@ class AccountRepositorySpec
         byUsername <- accountRepository.getAccountByUsername(dummyAccount.username, AuthenticatorType.Directory)
       } yield byUsername
 
-      result.map { optUser =>
-        optUser shouldEqual Some(dummyAccount)
+      result.map { addedAccount =>
+        addedAccount.isDefined shouldBe true
       }
     }
   }

@@ -45,10 +45,20 @@ class ProjectRepository(patchDatabase: Option[Database] = None) {
   }
 
   val projects = TableQuery[ProjectTable]
+  val members = TableQuery[MemberTable]
 
   def getProjectById(projectId: Long): Future[Option[Project]] = db.run(
     projects.filter(_.projectId === projectId).result.headOption
   )
+
+  def getProjectsByAccountId(accountId: Long): Future[Seq[Project]] = {
+    val query = members
+      .filter(_.accountId === accountId) // discussion: allow every member state
+      .join(projects)
+      .on(_.projectId === _.projectId)
+      .map { case (_, project) => project }
+    db.run(query.result)
+  }
 
   def addProject(project: Project): Future[Project] = db.run(
     projects.returning(projects) += project

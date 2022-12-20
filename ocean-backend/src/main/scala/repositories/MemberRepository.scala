@@ -118,9 +118,10 @@ class MemberRepository(patchDatabase: Option[Database] = None) {
     }
   }
 
-  def getMemberByAccountId(accountId: Long): Future[Option[MemberResponse]] = {
+  def getMemberByAccountId(accountId: Long, projectId: Long): Future[Option[MemberResponse]] = {
     val query = members
       .filter(_.accountId === accountId)
+      .filter(_.projectId === projectId)
       .join(accounts)
       .on(_.accountId === _.accountId)
       .join(projects)

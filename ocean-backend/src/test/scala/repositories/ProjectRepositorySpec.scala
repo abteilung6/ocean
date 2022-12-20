@@ -87,4 +87,35 @@ class ProjectRepositorySpec
       }
     }
   }
+
+  "getProjectsByAccountId" should {
+    "return projects only related to the account" in {
+      val projectRepository = new ProjectRepository(Some(getPGDatabase))
+      val accountRepository = new AccountRepository(Some(getPGDatabase))
+      val memberRepository = new MemberRepository((Some(getPGDatabase)))
+      val myMockAccount = getMockAccount(username = "username1", email = "email1")
+      val anotherMockAccount = getMockAccount(username = "username2", email = "email2")
+
+      val futureProjects = for {
+        myAccount <- accountRepository.addAccount(myMockAccount)
+        anotherAccount <- accountRepository.addAccount(anotherMockAccount)
+        myProject <- projectRepository.addProject(getMockProject(name = "project1", ownerId = myAccount.accountId))
+        anotherProject <- projectRepository.addProject(
+          getMockProject(name = "project2", ownerId = anotherAccount.accountId)
+        )
+        _ <- memberRepository.addMember(
+          getMockMember(projectId = myProject.projectId, accountId = myAccount.accountId)
+        )
+        _ <- memberRepository.addMember(
+          getMockMember(projectId = anotherProject.projectId, accountId = anotherAccount.accountId)
+        )
+        myProjects <- projectRepository.getProjectsByAccountId(myAccount.accountId)
+      } yield myProjects
+
+      futureProjects.map { projects =>
+        projects.length shouldBe 1
+        projects.head.name shouldBe "project1"
+      }
+    }
+  }
 }
