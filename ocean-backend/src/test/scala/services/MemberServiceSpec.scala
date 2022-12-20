@@ -9,7 +9,6 @@ import services.MemberService.Exceptions.{
   MemberExistsException,
   ProjectDoesNotExistException
 }
-
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{ any, anyLong }
 import org.mockito.Mockito.when
@@ -17,7 +16,6 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 import org.scalatestplus.mockito.MockitoSugar
-
 import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
 
 class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSugar with BeforeAndAfterEach {
@@ -38,23 +36,6 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
     new MemberService(memberRepository, projectRepository)
 
   "createMember" should {
-
-    "return ProjectDoesNotExistException if project does not exist" in {
-      val invitorAccount = getMockAccount()
-      val mockMemberResponse = getMockMemberResponse()
-      val memberService = createMemberService()
-      val createMemberRequest =
-        CreateMemberRequest(0L, mockMemberResponse.accountId, RoleType.Developer)
-
-      when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(0L)))
-        .thenReturn(Future(None))
-      when(defaultMemberRepository.getMemberByAccountId(anyLong(), anyLong()))
-        .thenReturn(Future(Some(mockMemberResponse)))
-
-      memberService.createMember(createMemberRequest, invitorAccount).failed.map { exception =>
-        exception.isInstanceOf[ProjectDoesNotExistException] shouldBe true
-      }
-    }
 
     "initially create a member as owner" in {
       val invitorAccount = getMockAccount(accountId = 10)
@@ -78,6 +59,23 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
 
       memberService.createMember(createMemberRequest, invitorAccount, forOwner = true).map { memberResponse =>
         memberResponse.accountId shouldBe invitorAccount.accountId
+      }
+    }
+
+    "return ProjectDoesNotExistException if project does not exist" in {
+      val invitorAccount = getMockAccount()
+      val mockMemberResponse = getMockMemberResponse()
+      val memberService = createMemberService()
+      val createMemberRequest =
+        CreateMemberRequest(0L, mockMemberResponse.accountId, RoleType.Developer)
+
+      when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(0L)))
+        .thenReturn(Future(None))
+      when(defaultMemberRepository.getMemberByAccountId(anyLong(), anyLong()))
+        .thenReturn(Future(Some(mockMemberResponse)))
+
+      memberService.createMember(createMemberRequest, invitorAccount).failed.map { exception =>
+        exception.isInstanceOf[ProjectDoesNotExistException] shouldBe true
       }
     }
 
@@ -261,6 +259,74 @@ class MemberServiceSpec extends AsyncWordSpecLike with Matchers with MockitoSuga
 
       memberService.acceptMember(memberVerificationTokenContent).map { memberResponse =>
         memberResponse shouldBe acceptedMember
+      }
+    }
+  }
+
+  "deleteMember" should {
+    "delete the member" in {
+      val project = getMockProject()
+      val account = getMockAccount(accountId = 10L)
+      val accountToDelete = getMockAccount(accountId = 20L)
+      val memberResponse =
+        getMockMemberResponse(accountId = account.accountId, memberId = 30L, roleType = RoleType.Admin)
+      val memberToDeleteResponse =
+        getMockMemberResponse(accountId = accountToDelete.accountId, memberId = 40L, roleType = RoleType.Admin)
+      val memberService = createMemberService()
+
+      when(defaultMemberRepository.getMemberById(ArgumentMatchers.eq(memberToDeleteResponse.memberId)))
+        .thenReturn(Future(Some(memberToDeleteResponse)))
+      when(
+        defaultMemberRepository.getMemberByAccountId(
+          ArgumentMatchers.eq(account.accountId),
+          ArgumentMatchers.eq(project.projectId)
+        )
+      )
+        .thenReturn(Future(Some(memberResponse)))
+      when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(project.projectId)))
+        .thenReturn(Future(Some(project)))
+      when(defaultMemberRepository.getMembersByProjectId(ArgumentMatchers.eq(project.projectId)))
+        .thenReturn(Future(Seq(memberResponse, memberToDeleteResponse)))
+      when(defaultMemberRepository.deleteMemberById(ArgumentMatchers.eq(memberToDeleteResponse.memberId)))
+        .thenReturn(Future(1))
+
+      memberService.deleteMember(memberToDeleteResponse.memberId, account).map { rows =>
+        rows shouldBe 1
+      }
+    }
+
+    List(
+      Tuple2(MemberState.Pending, RoleType.Admin),
+      Tuple2(MemberState.Pending, RoleType.Developer),
+      Tuple2(MemberState.Pending, RoleType.Viewer),
+      Tuple2(MemberState.Active, RoleType.Developer),
+      Tuple2(MemberState.Active, RoleType.Viewer)
+    ).foreach { case (state, roleType) =>
+      s"return ${InsufficientPermissionException.toString} with state ${state} and roleType $roleType}" in {
+        val project = getMockProject()
+        val account = getMockAccount(accountId = 10L)
+        val accountToDelete = getMockAccount(accountId = 20L)
+        val memberResponse =
+          getMockMemberResponse(accountId = account.accountId, memberId = 30L, state = state, roleType = roleType)
+        val memberToDeleteResponse =
+          getMockMemberResponse(accountId = accountToDelete.accountId, memberId = 40L, roleType = RoleType.Admin)
+        val memberService = createMemberService()
+
+        when(defaultMemberRepository.getMemberById(ArgumentMatchers.eq(memberToDeleteResponse.memberId)))
+          .thenReturn(Future(Some(memberToDeleteResponse)))
+        when(
+          defaultMemberRepository.getMemberByAccountId(
+            ArgumentMatchers.eq(account.accountId),
+            ArgumentMatchers.eq(project.projectId)
+          )
+        )
+          .thenReturn(Future(Some(memberResponse)))
+        when(defaultProjectRepository.getProjectById(ArgumentMatchers.eq(project.projectId)))
+          .thenReturn(Future(Some(project)))
+
+        memberService.deleteMember(memberToDeleteResponse.memberId, account).failed.map { exception =>
+          exception.isInstanceOf[InsufficientPermissionException] shouldBe true
+        }
       }
     }
   }
