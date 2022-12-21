@@ -177,6 +177,44 @@ class MemberControllerSpec
           }
       }
     }
+  }
 
+  "delete member endpoint" should {
+    "return rows count from delete member action" in {
+      val memberController = createMemberController()
+      val member = getMockMemberResponse(memberId = 20L, accountId = defaultAccount.accountId)
+
+      when(defaultMemberService.deleteMember(ArgumentMatchers.eq(member.memberId), ArgumentMatchers.eq(defaultAccount)))
+        .thenReturn(Future(1))
+
+      Delete(memberController.toRelativeURI(member.memberId.toString)) ~> addCredentials(
+        OAuth2BearerToken("ey..")
+      ) ~> memberController.route ~> check {
+        status shouldBe StatusCodes.OK
+        print(response)
+      }
+    }
+
+    List(
+      Tuple2(MemberService.Exceptions.MemberDoesNotExistException(), StatusCodes.NotFound),
+      Tuple2(MemberService.Exceptions.ProjectDoesNotExistException(), StatusCodes.NotFound),
+      Tuple2(MemberService.Exceptions.InsufficientPermissionException(), StatusCodes.Forbidden)
+    ).foreach { case (exception, statusCode) =>
+      s"return ErrorResponse with statusCode ${statusCode} for exception ${exception.toString}" in {
+        val memberController = createMemberController()
+        val member = getMockMemberResponse(memberId = 20L, accountId = defaultAccount.accountId)
+
+        when(defaultMemberService.deleteMember(any(), any()))
+          .thenReturn(Future.failed(exception))
+
+        Delete(memberController.toRelativeURI(member.memberId.toString)) ~> addCredentials(
+          OAuth2BearerToken("ey..")
+        ) ~> memberController.route ~> check {
+          val responseError = responseAs[ResponseError]
+          responseError.statusCode shouldBe statusCode.intValue
+          status shouldBe StatusCodes.BadRequest
+        }
+      }
+    }
   }
 }

@@ -91,6 +91,51 @@ class MemberService(memberRepository: MemberRepository, projectRepository: Proje
         case None         => Future.failed(MemberDoesNotExistException())
       }
     } yield acceptedMember
+
+  /**
+   * Delete a member in a project with following requirements
+   *   - The project must exist
+   *   - Both members must exist
+   *   - The deleter must be in active state
+   *   - The deleting member must be admin or delete himself
+   *   - Project must have at least one member with admin role after deletion.
+   * @param memberId
+   * @param account
+   * @return
+   */
+  def deleteMember(memberId: Long, account: Account): Future[Int] =
+    for {
+      memberToDelete <- memberRepository.getMemberById(memberId).flatMap {
+        case Some(member) => Future(member)
+        case None         => Future.failed(MemberDoesNotExistException())
+      }
+      project <- projectRepository.getProjectById(memberToDelete.projectId).flatMap {
+        case Some(project) => Future(project)
+        case None          => Future.failed(ProjectDoesNotExistException())
+      }
+      _ <- memberRepository.getMemberByAccountId(account.accountId, project.projectId).flatMap {
+        case Some(member)
+            if (member.roleType == RoleType.Admin || memberToDelete.memberId == member.memberId) && member.state == MemberState.Active =>
+          Future(member)
+        case Some(_) =>
+          Future.failed(
+            InsufficientPermissionException(
+              s"Only members with role ${RoleType.Admin.entryName} can delete members from project."
+            )
+          )
+        case None => Future.failed(InsufficientPermissionException("You are not a member of this project."))
+      }
+      _ <- memberRepository.getMembersByProjectId(project.projectId).flatMap {
+        case members if members.count(_.roleType == RoleType.Admin) == 1 =>
+          Future.failed(
+            InsufficientPermissionException(
+              s"Project must have at least one member with role ${RoleType.Admin.entryName}."
+            )
+          )
+        case members => Future(members)
+      }
+      rowsDeleted <- memberRepository.deleteMemberById(memberId)
+    } yield rowsDeleted
 }
 
 object MemberService {
