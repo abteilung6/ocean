@@ -1,14 +1,14 @@
-name: Build
+name: Backend Code Quality
 
 on:
   push:
     branches:
       - main
-    tags:
-      - "**"
+    paths:
+      - ocean-backend/**
   pull_request:
-    branches:
-      - main
+    paths:
+      - ocean-backend/**
 
 defaults:
   run:
