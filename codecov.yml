@@ -5,3 +5,12 @@ coverage:
         target: 40%
         threshold: 0%
         base: auto
+    patch: off
+
+flags:
+  backend:
+    paths:
+      - ocean-backend/
+  frontend:
+    paths:
+      - ocean-frontend/
