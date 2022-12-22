@@ -190,4 +190,8 @@ class MemberRepository(patchDatabase: Option[Database] = None) {
   def deleteMemberById(memberId: Long): Future[Int] = db.run(
     members.filter(_.memberId === memberId).delete
   )
+
+  def deleteMembersByProjectId(projectId: Long): Future[Int] = db.run(
+    members.filter(_.projectId === projectId).delete
+  )
 }

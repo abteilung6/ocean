@@ -63,4 +63,8 @@ class ProjectRepository(patchDatabase: Option[Database] = None) {
   def addProject(project: Project): Future[Project] = db.run(
     projects.returning(projects) += project
   )
+
+  def deleteProject(projectId: Long): Future[Int] = db.run(
+    projects.filter(_.projectId === projectId).delete
+  )
 }

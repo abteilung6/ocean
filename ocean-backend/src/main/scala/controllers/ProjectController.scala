@@ -32,10 +32,17 @@ class ProjectController(
   override val basePath: String = "projects"
 
   override def route: Route =
-    AkkaHttpServerInterpreter().toRoute(List(getProjectEndpoint, getProjectsEndpoint, createProjectEndpoint))
+    AkkaHttpServerInterpreter().toRoute(
+      List(getProjectEndpoint, getProjectsEndpoint, createProjectEndpoint, deleteProjectEndpoint)
+    )
 
   override def endpoints: List[AnyEndpoint] =
-    List(getProjectEndpoint.endpoint, getProjectsEndpoint.endpoint, createProjectEndpoint.endpoint)
+    List(
+      getProjectEndpoint.endpoint,
+      getProjectsEndpoint.endpoint,
+      createProjectEndpoint.endpoint,
+      deleteProjectEndpoint.endpoint
+    )
 
   val getProjectsEndpoint: ServerEndpoint.Full[String, Account, Unit, ResponseError, Seq[Project], Any, Future] =
     endpointController.secureEndpointWithUser.get
@@ -93,6 +100,24 @@ class ProjectController(
           .recover {
             case e: ProjectService.Exceptions.ProjectAlreadyExistsException =>
               Left(ResponseError(StatusCodes.BadRequest.intValue, e.message))
+            case _ => Left(ResponseError(StatusCodes.InternalServerError.intValue, "Something went wrong"))
+          }
+      }
+
+  val deleteProjectEndpoint: ServerEndpoint.Full[String, Account, Long, ResponseError, Unit, Any, Future] =
+    endpointController.secureEndpointWithUser.delete
+      .tag(tag)
+      .description("Delete a project.")
+      .in(basePath / path[Long]("projectId"))
+      .serverLogic { account => projectId =>
+        projectService
+          .deleteProject(projectId, account)
+          .map(_ => Right())
+          .recover {
+            case e: ProjectService.Exceptions.ProjectDoesNotExistException =>
+              Left(ResponseError(StatusCodes.NotFound.intValue, e.message))
+            case e: ProjectService.Exceptions.InsufficientPermissionException =>
+              Left(ResponseError(StatusCodes.Forbidden.intValue, e.message))
             case _ => Left(ResponseError(StatusCodes.InternalServerError.intValue, "Something went wrong"))
           }
       }
