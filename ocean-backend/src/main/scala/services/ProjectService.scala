@@ -3,7 +3,7 @@ package services
 
 import repositories.{ MemberRepository, ProjectRepository }
 import repositories.dto.Account
-import repositories.dto.project.{ CreateProjectRequest, Project }
+import repositories.dto.project.{ CreateProjectRequest, MemberState, Project, RoleType }
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -37,6 +37,32 @@ class ProjectService(projectRepository: ProjectRepository, memberRepository: Mem
       Project(0L, createProjectRequest.name, createProjectRequest.description, Instant.now(), account.accountId)
     projectRepository.addProject(project).recoverWith { case _ => Future.failed(ProjectAlreadyExistsException()) }
   }
+
+  def deleteProject(projectId: Long, account: Account): Future[Int] =
+    for {
+      _ <- projectRepository
+        .getProjectById(projectId)
+        .flatMap {
+          case Some(project) => Future(project)
+          case None          => Future.failed(ProjectDoesNotExistException())
+        }
+      _ <- memberRepository
+        .getMemberByAccountId(account.accountId, projectId)
+        .flatMap {
+          case Some(memberResponse)
+              if memberResponse.state == MemberState.Active && memberResponse.roleType == RoleType.Admin =>
+            Future(memberResponse)
+          case Some(_) =>
+            Future.failed(
+              InsufficientPermissionException(
+                s"Only active members with role ${RoleType.Admin.entryName} can delete members from project."
+              )
+            )
+          case None => Future.failed(InsufficientPermissionException("You are not a member of the project."))
+        }
+      _ <- memberRepository.deleteMembersByProjectId(projectId)
+      rowsDeleted <- projectRepository.deleteProject(projectId)
+    } yield rowsDeleted
 }
 
 object ProjectService {

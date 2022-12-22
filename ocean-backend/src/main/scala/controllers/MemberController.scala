@@ -123,7 +123,7 @@ class MemberController(
     endpointController.secureEndpointWithUser.delete
       .tag(tag)
       .description("Delete a member from project.")
-      .in(basePath / path[Long]("projectId"))
+      .in(basePath / path[Long]("memberId"))
       .serverLogic { account => memberId =>
         memberService
           .deleteMember(memberId, account)
