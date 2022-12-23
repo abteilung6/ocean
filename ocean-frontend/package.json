@@ -37,7 +37,7 @@
     "lint:fix": "eslint . --ext .ts,.js,.tsx,.jsx --fix",
     "prettify": "prettier --write **/*.{ts,tsx,js,jsx,json}",
     "lint-staged": "lint-staged",
-    "prepare": "husky install"
+    "prepare": "cd .. && husky install ocean-frontend/.husky"
   },
   "husky": {
     "hooks": {
