@@ -1,0 +1,18 @@
+{
+  "spaces": 2,
+  "generator-cli": {
+    "version": "6.0.1",
+    "generators": {
+      "v2.0": {
+        "generatorName": "typescript-axios",
+        "output": "./src/openapi-generated",
+        "inputSpec": "http://localhost:8080/docs/docs.yaml",
+        "additionalProperties": {
+          "npmName": "restClient",
+          "supportsES6": "true",
+          "withInterfaces": true
+        }
+      }
+    }
+  }
+}

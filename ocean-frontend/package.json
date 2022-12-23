@@ -23,6 +23,7 @@
     "@types/node": "^16.18.10",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.9",
+    "axios": "^1.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
@@ -33,11 +34,12 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint . --ext .ts,.js,.tsx,.jsx",
-    "lint:fix": "eslint . --ext .ts,.js,.tsx,.jsx --fix",
+    "lint": "eslint --ext .ts,.js,.tsx,.jsx ./src",
+    "lint:fix": "eslint --ext .ts,.js,.tsx,.jsx --fix ./src",
     "prettify": "prettier --write **/*.{ts,tsx,js,jsx,json}",
     "lint-staged": "lint-staged",
-    "prepare": "cd .. && husky install ocean-frontend/.husky"
+    "prepare": "cd .. && husky install ocean-frontend/.husky",
+    "generate-client": "openapi-generator-cli generate"
   },
   "husky": {
     "hooks": {
@@ -62,7 +64,8 @@
   },
   "jest": {
     "collectCoverageFrom": [
-      "!src/reportWebVitals.ts"
+      "!src/reportWebVitals.ts",
+      "src/openapi-generated"
     ]
   },
   "browserslist": {
@@ -78,6 +81,7 @@
     ]
   },
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.5.2",
     "@typescript-eslint/eslint-plugin": "^5.47.0",
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
