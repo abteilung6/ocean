@@ -29,6 +29,9 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
+      - name: ESLint validation
+        run: npm run lint
+
       - name: Run tests and collect coverage
         run: npm run test -- --coverage .
 
