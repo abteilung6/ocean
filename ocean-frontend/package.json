@@ -64,7 +64,8 @@
   },
   "jest": {
     "collectCoverageFrom": [
-      "!src/reportWebVitals.ts"
+      "!src/reportWebVitals.ts",
+      "src/openapi-generated"
     ]
   },
   "browserslist": {
