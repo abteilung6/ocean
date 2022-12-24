@@ -52,7 +52,8 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
             Instant.now.getEpochSecond
           )
         )
-      case None => Future.failed(IncorrectCredentialsException())
+      case Some(_) => Future.failed(IncorrectCredentialsException())
+      case None    => Future.failed(IncorrectCredentialsException())
     }
 
   def registerWithCredentials(registerAccountRequest: RegisterAccountRequest): Future[Account] = {
