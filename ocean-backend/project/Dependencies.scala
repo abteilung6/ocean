@@ -6,6 +6,7 @@ object Dependencies {
     val akkaVersion = "2.6.20"
     val akkaHttpVersion = "10.2.10"
     val akkaHttpCirceVersion = "1.39.2"
+    val akkaHttpCors = "1.1.3"
     val circeVersion = "0.14.3"
     val jwtCirceVersion = "9.1.1"
     val macwireVersion = "2.5.8"
@@ -28,6 +29,7 @@ object Dependencies {
   val akkaStream = "com.typesafe.akka" %% "akka-stream" % Version.akkaVersion
   val akkaHttp = "com.typesafe.akka" %% "akka-http" % Version.akkaHttpVersion
   val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % Version.akkaHttpCirceVersion
+  val akkaHttpCors = "ch.megard" %% "akka-http-cors" % Version.akkaHttpCors
   val circeCore = "io.circe" %% "circe-core" % Version.circeVersion
   val circeGeneric = "io.circe" %% "circe-generic" % Version.circeVersion
   val circeParser = "io.circe" %% "circe-parser" % Version.circeVersion
@@ -54,9 +56,13 @@ object Dependencies {
   val bCrypt = "com.github.t3hnar" %% "scala-bcrypt" % Version.bCryptVersion
 
   lazy val akkaDependencies: Seq[ModuleID] =
-    Seq(akkaActor, akkaStream, akkaHttp, akkaHttpCirce, circeCore, circeGeneric, circeParser, jwtCirce)
+    Seq(akkaActor, akkaStream, akkaHttp, akkaHttpCirce, akkaHttpCors)
   lazy val coreDependencies: Seq[ModuleID] =
     Seq(
+      circeCore,
+      circeGeneric,
+      circeParser,
+      jwtCirce,
       macwire,
       directoryApi,
       slick,

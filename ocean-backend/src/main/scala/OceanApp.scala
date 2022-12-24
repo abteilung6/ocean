@@ -11,6 +11,7 @@ import utils.RuntimeConfig
 import controllers.ControllerModule
 import sttp.tapir.server.akkahttp.AkkaHttpServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives.cors
 
 object OceanApp extends App {
 
@@ -24,9 +25,13 @@ object OceanApp extends App {
     SwaggerInterpreter().fromEndpoints[Future](module.endpoints, openAPIConfig.title, openAPIConfig.version)
   val swaggerRoute: Route = AkkaHttpServerInterpreter().toRoute(swaggerEndpoints)
 
+  val routesWithCors = cors() {
+    module.routes ~ swaggerRoute
+  }
+
   val bindingFuture = Http()
     .newServerAt(serverBindingConfig.interface, serverBindingConfig.port)
-    .bind(module.routes ~ swaggerRoute)
+    .bind(routesWithCors)
 
   bindingFuture.onComplete {
     case Success(binding) =>
