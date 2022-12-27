@@ -57,7 +57,6 @@ class MemberRepositorySpec
       createMember(roleType = RoleType.Viewer, memberState = MemberState.Active).map {
         case (addedAccount, addedProject, addedMember) =>
           addedMember.accountId shouldEqual addedAccount.accountId
-          addedMember.accountUsername shouldEqual addedAccount.username
           addedMember.projectId shouldEqual addedProject.projectId
           addedMember.projectName shouldEqual addedProject.name
           addedMember.roleType shouldEqual RoleType.Viewer

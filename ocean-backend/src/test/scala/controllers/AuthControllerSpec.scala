@@ -90,46 +90,6 @@ class AuthControllerSpec
     }
   }
 
-  "signIn with authenticator type directory" should {
-    val username = "username1"
-    val password = "password1"
-    val signInRequestStr = s"""{"username":"${username}","password":"${password}"}"""
-    val httpEntity = HttpEntity(`application/json`, signInRequestStr)
-
-    "return an AuthResponse with access and refresh token" in {
-      val authResponse = AuthResponse("accessToken", "refreshToken")
-      val authServiceMock: AuthService = mock[AuthService]
-      val authController = createAuthController(authService = authServiceMock)
-
-      when(authServiceMock.authenticateWithDirectory(anyString(), anyString()))
-        .thenReturn(Future.successful(authResponse))
-
-      Post(
-        authController.toRelativeURI("signin", Map("authenticator" -> AuthenticatorType.Directory.entryName)),
-        httpEntity
-      ) ~> authController.route ~> check {
-        status shouldBe StatusCodes.OK
-        responseAs[AuthResponse] shouldBe authResponse
-      }
-    }
-
-    "return Unauthorized status if user does not exist" in {
-      val authServiceMock: AuthService = mock[AuthService]
-      val authController = createAuthController(authService = authServiceMock)
-
-      when(authServiceMock.authenticateWithDirectory(anyString(), anyString()))
-        .thenReturn(Future.failed(AuthService.IncorrectCredentialsException("foo")))
-
-      Post(
-        authController.toRelativeURI("signin", Map("authenticator" -> AuthenticatorType.Directory.entryName)),
-        httpEntity
-      ) ~> authController.route ~> check {
-        status shouldBe StatusCodes.BadRequest
-        responseAs[ResponseError] shouldBe ResponseError(StatusCodes.Unauthorized.intValue, "foo")
-      }
-    }
-  }
-
   "refresh" should {
     val refreshToken = "refreshToken"
     val refreshRequestStr = s"""{"refreshToken":"${refreshToken}"}"""

@@ -8,7 +8,8 @@ final case class RegisterAccountRequest(
   password: String,
   email: String,
   firstname: String,
-  lastname: String
+  lastname: String,
+  company: String
 )
 
 object RegisterAccountRequest {
@@ -19,7 +20,8 @@ object RegisterAccountRequest {
         ("password", Json.fromString(a.password)),
         ("email", Json.fromString(a.email)),
         ("firstname", Json.fromString(a.firstname)),
-        ("lastname", Json.fromString(a.lastname))
+        ("lastname", Json.fromString(a.lastname)),
+        ("company", Json.fromString(a.company))
       )
     }
 
@@ -31,7 +33,8 @@ object RegisterAccountRequest {
           email <- c.downField("email").as[String]
           firstname <- c.downField("firstname").as[String]
           lastname <- c.downField("lastname").as[String]
-        } yield RegisterAccountRequest(username, password, email, firstname, lastname)
+          company <- c.downField("company").as[String]
+        } yield RegisterAccountRequest(username, password, email, firstname, lastname, company)
     }
   }
 }

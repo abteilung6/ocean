@@ -2,7 +2,6 @@ package org.abteilung6.ocean
 package services
 
 import repositories.AccountRepository
-import services.DirectoryService.UserEntry
 import repositories.dto.auth.{
   AccessTokenContent,
   AuthResponse,
@@ -19,31 +18,12 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future }
 import scala.util.{ Failure, Success, Try }
 
-class AuthService(directoryService: DirectoryService, accountRepository: AccountRepository, jwtService: JwtService) {
+class AuthService(accountRepository: AccountRepository, jwtService: JwtService) {
 
   import AuthService._
 
-  def authenticateWithDirectory(username: String, password: String): Future[AuthResponse] =
-    directoryService.authenticate(username, password) match {
-      case Failure(exception) => withDirectoryErrorMapping(exception)
-      case Success(userEntry) =>
-        getOrCreateUserFor(userEntry)
-          .flatMap { account =>
-            Future.successful(
-              jwtService.obtainsTokens(
-                AccessTokenContent(account.accountId.toInt),
-                RefreshTokenContent(account.accountId.toInt),
-                Instant.now.getEpochSecond
-              )
-            )
-          }
-          .recoverWith { case e: Throwable =>
-            withDirectoryErrorMapping(e)
-          }
-    }
-
   def authenticateWithCredentials(signInRequest: SignInRequest): Future[AuthResponse] =
-    accountRepository.getAccountByUsername(signInRequest.username, AuthenticatorType.Credentials) flatMap {
+    accountRepository.getAccountByEmail(signInRequest.email) flatMap {
       case Some(account) if BCryptUtils.validatePassword(account.passwordHash.get, signInRequest.password).get =>
         Future.successful(
           jwtService.obtainsTokens(
@@ -106,7 +86,7 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
     // Validation with database queries should occur at the end
     val accountWithUsername =
       Await.result(
-        accountRepository.getAccountByUsername(registerAccountRequest.username, AuthenticatorType.Credentials),
+        accountRepository.getAccountByEmail(registerAccountRequest.username),
         Duration(5, TimeUnit.SECONDS)
       )
     if (accountWithUsername.isDefined) {
@@ -134,29 +114,6 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
   def refreshTokens(refreshToken: String): Option[AuthResponse] =
     jwtService.refreshTokens(refreshToken, Instant.now.getEpochSecond)
 
-  private def getOrCreateUserFor(userEntry: UserEntry): Future[Account] =
-    for {
-      accountOpt <- accountRepository.getAccountByUsername(userEntry.uid, AuthenticatorType.Directory)
-      account <- accountOpt match {
-        case Some(value) => Future.successful(value)
-        case None        => accountRepository.addAccount(mapUserEntryToAccount(userEntry))
-      }
-    } yield account
-
-  private def mapUserEntryToAccount(userEntry: UserEntry): Account =
-    Account(
-      0L,
-      userEntry.uid,
-      userEntry.mail,
-      userEntry.givenName,
-      userEntry.name,
-      userEntry.employeeType,
-      Instant.now,
-      AuthenticatorType.Directory,
-      verified = true,
-      None
-    )
-
   private def mapRegisterAccountRequestToAccount(registerAccountRequest: RegisterAccountRequest): Try[Account] =
     BCryptUtils.encryptPassword(registerAccountRequest.password) match {
       case Failure(exception) => Failure(exception)
@@ -164,11 +121,10 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
         Success(
           Account(
             0L,
-            registerAccountRequest.username,
             registerAccountRequest.email,
             registerAccountRequest.firstname,
             registerAccountRequest.lastname,
-            "",
+            registerAccountRequest.company,
             Instant.now(),
             AuthenticatorType.Credentials,
             false,
@@ -176,16 +132,6 @@ class AuthService(directoryService: DirectoryService, accountRepository: Account
           )
         )
     }
-
-  def withDirectoryErrorMapping(throwable: Throwable): Future[Nothing] =
-    throwable match {
-      case _: DirectoryService.Exceptions.AccessDenied  => Future.failed(IncorrectCredentialsException())
-      case e: DirectoryService.Exceptions.InternalError => Future.failed(InternalError(e.message))
-      case e: Exception                                 => Future.failed(internalError(e))
-    }
-
-  private def internalError(throwable: Throwable): InternalError =
-    InternalError("Something went wrong :(")
 }
 
 object AuthService {

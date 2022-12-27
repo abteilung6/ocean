@@ -19,7 +19,6 @@ case class MemberResponse(
    * Account
    */
   accountId: Long,
-  accountUsername: String,
   accountAuthenticatorType: AuthenticatorType,
   accountEmail: String,
 

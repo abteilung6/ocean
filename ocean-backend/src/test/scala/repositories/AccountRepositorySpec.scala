@@ -32,19 +32,19 @@ class AccountRepositorySpec
       val futureAccount = accountRepository.addAccount(dummyAccount)
 
       futureAccount.map { addedAccount =>
-        addedAccount.username shouldBe dummyAccount.username
+        addedAccount.email shouldBe dummyAccount.email
       }
     }
   }
 
-  "getAccountByUsername" should {
-    "return an account by username and authenticator type" in {
+  "getAccountByEmail" should {
+    "return an account by email" in {
       val accountRepository = new AccountRepository(Some(getPGDatabase))
-      val dummyAccount = getMockAccount(accountId = 1, authenticatorType = AuthenticatorType.Directory)
+      val dummyAccount = getMockAccount(accountId = 1)
 
       val result = for {
         _ <- accountRepository.addAccount(dummyAccount)
-        byUsername <- accountRepository.getAccountByUsername(dummyAccount.username, AuthenticatorType.Directory)
+        byUsername <- accountRepository.getAccountByEmail(dummyAccount.email)
       } yield byUsername
 
       result.map { addedAccount =>

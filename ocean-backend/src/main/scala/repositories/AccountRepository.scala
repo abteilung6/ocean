@@ -26,15 +26,13 @@ class AccountTable(tag: Tag) extends Table[Account](tag, "accounts") {
 
   def accountId: Rep[Long] = column[Long]("account_id", O.PrimaryKey, O.AutoInc)
 
-  def username: Rep[String] = column[String]("username")
-
   def email: Rep[String] = column[String]("email", O.Unique)
 
   def firstname: Rep[String] = column[String]("firstname")
 
   def lastname: Rep[String] = column[String]("lastname")
 
-  def employeeType: Rep[String] = column[String]("employee_type")
+  def company: Rep[String] = column[String]("company")
 
   def createdAt: Rep[Instant] = column[Instant]("created_at")
 
@@ -47,19 +45,15 @@ class AccountTable(tag: Tag) extends Table[Account](tag, "accounts") {
   def * : ProvenShape[Account] =
     (
       accountId,
-      username,
       email,
       firstname,
       lastname,
-      employeeType,
+      company,
       createdAt,
       authenticatorType,
       verified,
       passwordHash
     ) <> ((Account.apply _).tupled, Account.unapply)
-
-  def indexUsernameAuthenticatorType =
-    index("idx_username_authenticator_type", (username, authenticatorType), unique = true)
 }
 
 class AccountRepository(patchDatabase: Option[Database] = None) {
@@ -79,13 +73,6 @@ class AccountRepository(patchDatabase: Option[Database] = None) {
 
   def getAccountById(accountId: Long): Future[Option[Account]] = db.run(
     accounts.filter(_.accountId === accountId).result.headOption
-  )
-
-  def getAccountByUsername(username: String, authenticatorType: AuthenticatorType): Future[Option[Account]] = db.run(
-    accounts
-      .filter(account => account.username === username && account.authenticatorType === authenticatorType)
-      .result
-      .headOption
   )
 
   def getAccountByEmail(email: String): Future[Option[Account]] = db.run(

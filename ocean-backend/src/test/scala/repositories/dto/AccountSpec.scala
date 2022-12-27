@@ -16,11 +16,10 @@ class AccountSpec extends AnyWordSpec with Matchers with MockitoSugar with Eithe
     val accountString =
       s"""|{
           |  "accountId" : 0,
-          |  "username" : "username1",
           |  "email" : "username1@localhost.com",
           |  "firstname" : "firstname1",
           |  "lastname" : "lastname2",
-          |  "employeeType" : "student",
+          |  "company" : "student",
           |  "createdAt" : "2022-11-09T19:14:31.903Z",
           |  "authenticatorType" : "credentials",
           |  "verified" : false,

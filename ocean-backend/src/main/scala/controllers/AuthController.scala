@@ -70,18 +70,6 @@ class AuthController(
     signInRequest: SignInRequest
   ): Future[Either[ResponseError, AuthResponse]] =
     authenticatorType match {
-      case AuthenticatorType.Directory =>
-        authService
-          .authenticateWithDirectory(signInRequest.username, signInRequest.password)
-          .map { authResponse: AuthResponse =>
-            Right(authResponse)
-          }
-          .recover {
-            case AuthService.IncorrectCredentialsException(message) =>
-              Left(ResponseError(StatusCodes.Unauthorized.intValue, message))
-            case AuthService.InternalError(message) =>
-              Left(ResponseError(StatusCodes.InternalServerError.intValue, message))
-          }
       case AuthenticatorType.Credentials =>
         authService
           .authenticateWithCredentials(signInRequest)
