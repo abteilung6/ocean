@@ -23,7 +23,7 @@ class AuthService(accountRepository: AccountRepository, jwtService: JwtService) 
   import AuthService._
 
   def authenticateWithCredentials(signInRequest: SignInRequest): Future[AuthResponse] =
-    accountRepository.getAccountByUsername(signInRequest.username, AuthenticatorType.Credentials) flatMap {
+    accountRepository.getAccountByEmail(signInRequest.email) flatMap {
       case Some(account) if BCryptUtils.validatePassword(account.passwordHash.get, signInRequest.password).get =>
         Future.successful(
           jwtService.obtainsTokens(
@@ -86,7 +86,7 @@ class AuthService(accountRepository: AccountRepository, jwtService: JwtService) 
     // Validation with database queries should occur at the end
     val accountWithUsername =
       Await.result(
-        accountRepository.getAccountByUsername(registerAccountRequest.username, AuthenticatorType.Credentials),
+        accountRepository.getAccountByEmail(registerAccountRequest.username),
         Duration(5, TimeUnit.SECONDS)
       )
     if (accountWithUsername.isDefined) {
@@ -121,11 +121,10 @@ class AuthService(accountRepository: AccountRepository, jwtService: JwtService) 
         Success(
           Account(
             0L,
-            registerAccountRequest.username,
             registerAccountRequest.email,
             registerAccountRequest.firstname,
             registerAccountRequest.lastname,
-            "",
+            registerAccountRequest.company,
             Instant.now(),
             AuthenticatorType.Credentials,
             false,

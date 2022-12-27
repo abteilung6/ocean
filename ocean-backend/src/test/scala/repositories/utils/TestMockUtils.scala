@@ -23,7 +23,6 @@ object TestMockUtils {
   ): Account =
     Account(
       accountId,
-      username,
       email,
       firstname,
       lastname,
@@ -39,9 +38,10 @@ object TestMockUtils {
     password: String = "password",
     email: String = "alice@bob.com",
     firstname: String = "Firstname",
-    lastname: String = "Lastname"
+    lastname: String = "Lastname",
+    company: String = "Company"
   ): RegisterAccountRequest =
-    RegisterAccountRequest(username, password, email, firstname, lastname)
+    RegisterAccountRequest(username, password, email, firstname, lastname, company)
 
   def getMockProject(
     projectId: Long = 0L,
@@ -79,7 +79,6 @@ object TestMockUtils {
       state,
       createdAt,
       accountId,
-      accountUsername,
       accountAuthenticatorType,
       accountEmail,
       projectId,
