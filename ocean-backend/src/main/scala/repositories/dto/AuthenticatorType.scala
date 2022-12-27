@@ -10,7 +10,5 @@ object AuthenticatorType extends Enum[AuthenticatorType] with TapirCodecEnumerat
 
   val values: IndexedSeq[AuthenticatorType] = findValues
 
-  case object Directory extends AuthenticatorType("directory")
-
   case object Credentials extends AuthenticatorType("credentials")
 }

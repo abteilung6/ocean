@@ -17,7 +17,7 @@ object TestMockUtils {
     lastname: String = "lastname2",
     employeeType: String = "student",
     createdAt: Instant = Instant.now(),
-    authenticatorType: AuthenticatorType = AuthenticatorType.Directory,
+    authenticatorType: AuthenticatorType = AuthenticatorType.Credentials,
     verified: Boolean = false,
     passwordHash: Option[String] = None
   ): Account =
