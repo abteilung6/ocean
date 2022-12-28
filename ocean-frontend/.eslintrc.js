@@ -4,7 +4,12 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  extends: ['plugin:react/recommended', 'standard-with-typescript', 'prettier'],
+  extends: [
+    'plugin:react/recommended',
+    'standard-with-typescript',
+    'prettier',
+    'plugin:storybook/recommended',
+  ],
   overrides: [],
   parserOptions: {
     ecmaVersion: 'latest',
@@ -12,7 +17,10 @@ module.exports = {
     project: './tsconfig.json',
   },
   plugins: ['react'],
-  rules: {},
+  rules: {
+    '@typescript-eslint/consistent-type-assertions': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+  },
   settings: {
     react: {
       version: 'detect',
