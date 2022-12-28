@@ -8,7 +8,6 @@
     "service",
     "iaas"
   ],
-  "homepage": "https://github.com/abteilung6/oceans",
   "author": {
     "name": "Tilman",
     "url": "https://github.com/abteilung6"
@@ -26,6 +25,8 @@
     "axios": "^1.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router": "^6.6.1",
+    "react-router-dom": "^6.6.1",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -93,6 +94,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-transform-block-scoping": "^7.20.5",
     "@openapitools/openapi-generator-cli": "^2.5.2",
     "@storybook/addon-actions": "^6.5.15",
     "@storybook/addon-essentials": "^6.5.15",
@@ -107,7 +109,6 @@
     "@typescript-eslint/eslint-plugin": "^5.47.0",
     "autoprefixer": "^10.4.13",
     "babel-plugin-named-exports-order": "^0.0.2",
-    "@babel/plugin-transform-block-scoping": "^7.20.5",
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard-with-typescript": "^24.0.0",
