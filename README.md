@@ -8,6 +8,7 @@
 [![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?style=for-the-badge&logo=figma&logoColor=white)](https://www.figma.com/file/SJaeUFC5czWhkmdjUEBQRp/Ocean---Design-System?node-id=1%3A2&t=geemuKeRaYbd7ZhU-1)
 [![Jira](https://img.shields.io/badge/jira-%230A0FFF.svg?style=for-the-badge&logo=jira&logoColor=white)](https://abteilung6.atlassian.net/jira/software/projects/OCN/boards/4/backlog)
 [![CodeCov](https://img.shields.io/badge/codecov-%23ff0077.svg?style=for-the-badge&logo=codecov&logoColor=white)](https://app.codecov.io/gh/abteilung6/ocean)
+[![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
 # Ocean 🐋
 Managed Infrastructure as a Service - Platform (under construction)
