@@ -21,6 +21,7 @@ module.exports = {
     '@typescript-eslint/consistent-type-assertions': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/strict-boolean-expressions': 'off',
+    '@typescript-eslint/no-extraneous-class': 'off',
   },
   settings: {
     react: {

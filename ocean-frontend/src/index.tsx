@@ -3,12 +3,18 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { SignInPage } from './routes/SignInPage';
+import { Routes } from './lib/routes';
 import './index.css';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
+  },
+  {
+    path: Routes.getSignInPageRoute(),
+    element: <SignInPage />,
   },
 ]);
 
