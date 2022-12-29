@@ -4,14 +4,15 @@ import userEvent from '@testing-library/user-event';
 import { TextInput } from './TextInput';
 
 describe(TextInput.name, () => {
+  const user = userEvent.setup();
   test('should change the value', async () => {
     render(<TextInput label="My label" name="my-label" />);
 
-    // Accessibility by label
+    // Accessibility check by label
     const input = screen.getByLabelText('My label');
     expect(input).toHaveValue('');
 
-    userEvent.type(input, 'changed');
+    await user.type(input, 'changed');
     await waitFor(() => expect(input).toHaveValue('changed'));
   });
 });
