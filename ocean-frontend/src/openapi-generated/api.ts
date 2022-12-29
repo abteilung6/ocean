@@ -38,12 +38,6 @@ export interface Account {
      * @type {string}
      * @memberof Account
      */
-    'username': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Account
-     */
     'email': string;
     /**
      * 
@@ -62,7 +56,7 @@ export interface Account {
      * @type {string}
      * @memberof Account
      */
-    'employeeType': string;
+    'company': string;
     /**
      * 
      * @type {string}
@@ -114,7 +108,6 @@ export interface AuthResponse {
  */
 
 export const AuthenticatorType = {
-    Directory: 'directory',
     Credentials: 'credentials'
 } as const;
 
@@ -332,6 +325,12 @@ export interface RegisterAccountRequest {
      * @memberof RegisterAccountRequest
      */
     'lastname': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RegisterAccountRequest
+     */
+    'company': string;
 }
 /**
  * 
@@ -378,7 +377,7 @@ export interface SignInRequest {
      * @type {string}
      * @memberof SignInRequest
      */
-    'username': string;
+    'email': string;
     /**
      * 
      * @type {string}
