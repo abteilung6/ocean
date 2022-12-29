@@ -1,48 +1,53 @@
-import React from 'react';
-import './button.css';
+import React, { ButtonHTMLAttributes, DetailedHTMLProps } from 'react';
 
-interface ButtonProps {
-  /**
-   * Is this the principal call to action on the page?
-   */
-  primary?: boolean;
-  /**
-   * What background color to use
-   */
-  backgroundColor?: string;
-  /**
-   * How large should the button be?
-   */
-  size?: 'small' | 'medium' | 'large';
-  /**
-   * Button contents
-   */
-  label: string;
-  /**
-   * Optional click handler
-   */
-  onClick?: () => void;
-}
+type ButtonVariant = 'primary' | 'secondary' | 'white';
 
-/**
- * Primary UI component for user interaction
- */
+type ButtonSize = 'small' | 'medium' | 'large';
+
+type ButtonProps = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  disabled?: boolean;
+  fullWidth?: boolean;
+};
+
 export const Button = ({
-  primary = false,
+  variant = 'primary',
   size = 'medium',
-  backgroundColor,
-  label,
+  disabled = false,
+  fullWidth = false,
+  className,
+  children,
   ...props
 }: ButtonProps) => {
-  const mode = primary ? 'storybook-button--primary' : 'storybook-button--secondary';
+  const fullWidthStyle = fullWidth ? 'w-full' : '';
   return (
     <button
       type="button"
-      className={['storybook-button', `storybook-button--${size}`, mode].join(' ')}
-      style={{ backgroundColor }}
+      className={[
+        'inline-flex justify-center rounded-md border shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-75',
+        sizeToStyles[size],
+        variantToStyles[variant],
+        fullWidthStyle,
+        className,
+      ].join(' ')}
+      disabled={disabled}
       {...props}
     >
-      {label}
+      {children}
     </button>
   );
+};
+
+const sizeToStyles: Record<ButtonSize, string> = {
+  small: 'px-3 py-2 text-sm leading-4',
+  medium: 'px-4 py-2 text-sm',
+  large: 'px-4 py-2 text-base',
+};
+
+const variantToStyles: Record<ButtonVariant, string> = {
+  primary: 'border-transparent bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500',
+  secondary:
+    'border-transparent bg-indigo-100 text-indigo-700 hover:bg-indigo-200 focus:ring-indigo-500',
+  white: 'border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-indigo-500',
 };
