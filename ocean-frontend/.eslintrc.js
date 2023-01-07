@@ -9,6 +9,7 @@ module.exports = {
     'standard-with-typescript',
     'prettier',
     'plugin:storybook/recommended',
+    'plugin:react-hooks/recommended',
   ],
   overrides: [],
   parserOptions: {

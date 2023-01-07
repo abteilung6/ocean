@@ -1,13 +1,16 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { SignInPage } from './SignInPage';
 import userEvent from '@testing-library/user-event';
-import { renderWithTestingRouter } from '../lib/routes';
+
+import { createTestUtils } from '../lib/testUtils';
 
 describe(SignInPage.name, () => {
   const user = userEvent.setup();
+  const { render } = createTestUtils();
+
   beforeEach(() => {
-    render(renderWithTestingRouter(<SignInPage />));
+    render(<SignInPage />);
   });
 
   test('should disabled submit button until form is valid', async () => {
