@@ -1,7 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { SignInRequest } from '../openapi-generated';
-import { useSignInMutation } from './useQueries';
+import { useRefreshTokenMutation, useSignInMutation } from './useQueries';
+import { isTokenExpired } from '../lib/jwt';
 
 interface AuthenticationContextProps {
   isLoggedIn: boolean | undefined;
@@ -19,21 +20,55 @@ const AuthenticationContext = createContext<AuthenticationContextProps>({
   error: undefined,
 });
 
+/**
+ * A provider for authentication handling.
+ * @returns
+ */
 export const AuthenticationProvider: React.FC = () => {
   const navigate = useNavigate();
   const signInMutation = useSignInMutation();
+  const refreshTokenMutation = useRefreshTokenMutation();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | undefined>();
 
   useEffect(() => {
-    if (localStorage.getItem('accessToken')) {
-      // TODO: validate accessToken or refreshToken
-      setIsLoggedIn(true);
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+    // Since this is a web-based application with sensitive data
+    if (accessToken !== null) {
+      // Access token strategy without any request.
+      if (!isTokenExpired(accessToken)) {
+        setIsLoggedIn(true);
+      } else if (refreshToken !== null && !isTokenExpired(refreshToken)) {
+        // Refresh token strategy with a request.
+        void runRefreshTokenStrategy(refreshToken);
+      }
     } else {
       setIsLoggedIn(false);
       navigate('/signin');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const runRefreshTokenStrategy = useCallback(
+    async (token: string) => {
+      return await refreshTokenMutation
+        .mutateAsync({ refreshToken: token })
+        .then((authResponse) => {
+          localStorage.setItem('accessToken', authResponse.accessToken);
+          localStorage.setItem('refreshToken', authResponse.refreshToken);
+          setIsLoggedIn(true);
+        })
+        .catch((error) => {
+          // Since we already validated the refresh token on client side, this should not happen.
+          // Therefor we categorize this case as an error.
+          console.error(error);
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          setIsLoggedIn(false);
+        });
+    },
+    [refreshTokenMutation]
+  );
 
   const login = useCallback(
     (signInReqest: SignInRequest) => {
