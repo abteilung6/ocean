@@ -1,14 +1,37 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { QueryClientProvider } from 'react-query';
 import reportWebVitals from './reportWebVitals';
-import { browserRouter } from './lib/routes';
+import { queryClient } from './lib/queryClient';
+import { AuthenticationProvider } from './hooks/useAuthentication';
+import { SignInPage } from './routes/SignInPage';
+import { DashboardPage } from './routes/DashboardPage';
 import './index.css';
+
+export const browserRouter = createBrowserRouter([
+  {
+    path: '/',
+    element: <AuthenticationProvider />,
+    children: [
+      {
+        path: '/signin',
+        element: <SignInPage />,
+      },
+      {
+        path: '/',
+        element: <DashboardPage />,
+      },
+    ],
+  },
+]);
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <RouterProvider router={browserRouter} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={browserRouter} />
+    </QueryClientProvider>
   </React.StrictMode>
 );
 

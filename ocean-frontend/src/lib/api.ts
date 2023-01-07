@@ -1,4 +1,3 @@
-import axios from 'axios';
 import {
   AccountApi,
   AuthenticationApi,
@@ -6,8 +5,7 @@ import {
   MemberApi,
   ProjectApi,
 } from '../openapi-generated';
-
-export const axiosInstance = axios.create();
+import { axiosPlatformInstance } from './axios';
 
 const configuration = new Configuration({
   basePath: process.env.REACT_APP_API_DOMAIN,
@@ -18,8 +16,8 @@ const configuration = new Configuration({
  * - api.Authentication.postApiAuthRegister({});
  */
 export default {
-  Authentication: new AuthenticationApi(configuration, '', axiosInstance),
-  Account: new AccountApi(configuration, '', axiosInstance),
-  Member: new MemberApi(configuration, '', axiosInstance),
-  Project: new ProjectApi(configuration, '', axiosInstance),
+  Authentication: new AuthenticationApi(configuration, '', axiosPlatformInstance),
+  Account: new AccountApi(configuration, '', axiosPlatformInstance),
+  Member: new MemberApi(configuration, '', axiosPlatformInstance),
+  Project: new ProjectApi(configuration, '', axiosPlatformInstance),
 };
