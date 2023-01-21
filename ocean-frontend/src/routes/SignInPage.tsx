@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { Button } from '../components/Button/Button';
 import { SplitLayout } from '../components/SplitLayout/SplitLayout';
 import { TextInput } from '../components/TextInput/TextInput';
+import { useAuthentication } from '../hooks/useAuthentication';
 
 export const signInSchema = Yup.object({
   email: Yup.string().email('Invalid email address').required('Required'),
@@ -14,6 +15,7 @@ export const signInSchema = Yup.object({
 });
 
 export const SignInPage: React.FC = () => {
+  const { login, loading } = useAuthentication();
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -21,7 +23,7 @@ export const SignInPage: React.FC = () => {
     },
     validationSchema: signInSchema,
     onSubmit: (values) => {
-      console.log('Not implemented yet', values);
+      login(values);
       formik.setSubmitting(false);
     },
   });
@@ -53,6 +55,7 @@ export const SignInPage: React.FC = () => {
               isValid={formik.touched.email && !formik.errors.email}
               validationError={formik.errors.email}
               value={formik.values.email}
+              disabled={loading}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
             />
@@ -66,6 +69,7 @@ export const SignInPage: React.FC = () => {
               value={formik.values.password}
               isValid={formik.touched.password && !formik.errors.password}
               validationError={formik.errors.password}
+              disabled={loading}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
             />
@@ -74,7 +78,7 @@ export const SignInPage: React.FC = () => {
             <Button
               type="submit"
               fullWidth
-              disabled={!formik.isValid || formik.isSubmitting || !formik.dirty}
+              disabled={!formik.isValid || formik.isSubmitting || !formik.dirty || loading}
             >
               Sign in
             </Button>
