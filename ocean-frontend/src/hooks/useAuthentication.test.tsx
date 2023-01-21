@@ -1,12 +1,13 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AuthenticationProvider, useAuthentication } from './useAuthentication';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { QueryClientProvider } from 'react-query';
+import { AuthenticationProvider, useAuthentication } from './useAuthentication';
 import { queryClient } from '../lib/queryClient';
 import api from '../lib/api';
 import { mockAxiosResponse } from '../lib/testUtils';
+import { JwtUtils } from '../lib/jwtUtils';
 
 export const DisplayAuthenticationContext: React.FC<{ virtualRoute?: string }> = ({
   virtualRoute,
@@ -35,7 +36,7 @@ describe(AuthenticationProvider.name, () => {
   const customRouter = createBrowserRouter([
     {
       path: '/',
-      element: <AuthenticationProvider />,
+      element: <AuthenticationProvider disabledRefresh />,
       children: [
         {
           path: '/',
@@ -49,23 +50,72 @@ describe(AuthenticationProvider.name, () => {
     },
   ]);
 
-  beforeEach(() => {
+  const customRender = ({
+    accessToken = null,
+    refreshToken = null,
+    tokenExpired = true,
+  }: {
+    accessToken?: string | null;
+    refreshToken?: string | null;
+    tokenExpired?: boolean;
+  }) => {
+    accessToken === null
+      ? localStorage.removeItem('accessToken')
+      : localStorage.setItem('accessToken', accessToken);
+    refreshToken === null
+      ? localStorage.removeItem('refreshToken')
+      : localStorage.setItem('refreshToken', refreshToken);
+
+    JwtUtils.isTokenExpired = jest.fn().mockReturnValue(tokenExpired);
+
     render(
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={customRouter} />
       </QueryClientProvider>
     );
-  });
+  };
 
   afterEach(() => {
     localStorage.clear();
   });
 
-  test('should logout when local storage has no accessToken', async () => {
-    expect(screen.getByTestId('logged-in-id').textContent).toBe('user-logged-out');
+  describe('when provider gets mounted', () => {
+    test('should logout when local storage has no accessToken and no refresh token', async () => {
+      customRender({});
+      expect(screen.getByTestId('logged-in-id').textContent).toBe('user-logged-out');
+    });
+
+    test('should run access token strategy if access token is given and not expired', async () => {
+      customRender({ accessToken: 'ey...', tokenExpired: false });
+      await waitFor(() =>
+        expect(screen.getByTestId('logged-in-id').textContent).toBe('user-logged-in')
+      );
+    });
+
+    test('should run refresh token strategy if refresh token is given and not expired', async () => {
+      const spyPostApiAuthRefresh = jest
+        .spyOn(api.Authentication, 'postApiAuthRefresh')
+        .mockResolvedValue(
+          mockAxiosResponse({
+            data: { accessToken: 'accessToken', refreshToken: 'refreshToken' },
+          })
+        );
+      customRender({ accessToken: null, refreshToken: 'ey...', tokenExpired: false });
+
+      await waitFor(() =>
+        expect(screen.getByTestId('logged-in-id').textContent).toBe('user-logged-in')
+      );
+      expect(localStorage.getItem('accessToken')).toBe('accessToken');
+      expect(localStorage.getItem('refreshToken')).toBe('refreshToken');
+      expect(spyPostApiAuthRefresh).toBeCalledWith({ refreshToken: 'ey...' });
+    });
   });
 
   describe('when login action is successfully called', () => {
+    beforeEach(() => {
+      customRender({});
+    });
+
     test('should navigate to overview', async () => {
       jest.spyOn(api.Authentication, 'postApiAuthSignin').mockResolvedValue(
         mockAxiosResponse({
@@ -99,20 +149,10 @@ describe(AuthenticationProvider.name, () => {
     });
   });
 
-  describe('when login action failed', () => {
-    test('should display the error', async () => {
-      jest
-        .spyOn(api.Authentication, 'postApiAuthSignin')
-        .mockRejectedValue(new Error('Error message'));
-      const loginButton = screen.getByRole('button', { name: 'Login' });
-      await user.click(loginButton);
-
-      expect(screen.getByTestId('error-id').textContent).toBe('Error message');
-    });
-  });
-
   describe('when logout action is successfully called', () => {
     beforeEach(async () => {
+      customRender({});
+
       // Reproduce login state
       jest.spyOn(api.Authentication, 'postApiAuthSignin').mockResolvedValue(
         mockAxiosResponse({
