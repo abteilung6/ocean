@@ -1,13 +1,14 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useNavigate } from 'react-router-dom';
+import { useSignUpMutation } from '../hooks/useQueries';
+import { useAuthentication } from '../hooks/useAuthentication';
+import { Routing } from '../lib/routing';
 import { Button } from '../components/Button/Button';
 import { SplitLayout } from '../components/SplitLayout/SplitLayout';
 import { TextInput } from '../components/TextInput/TextInput';
-import { useSignUpMutation } from '../hooks/useQueries';
-import { useAuthentication } from '../hooks/useAuthentication';
-import { useNavigate } from 'react-router-dom';
-import { Routing } from '../lib/routing';
+import { Alert } from '../components/Alert/Alert';
 
 export const signUpSchema = Yup.object({
   email: Yup.string().email('Invalid email address').required('Email is required.'),
@@ -22,7 +23,7 @@ export const signUpSchema = Yup.object({
 
 export const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, loading } = useAuthentication();
+  const { error, login, loading } = useAuthentication();
   const signUpMutation = useSignUpMutation();
   const formik = useFormik({
     initialValues: {
@@ -61,6 +62,7 @@ export const SignUpPage: React.FC = () => {
               have an account?
             </span>
           </p>
+          <div className="mt-6">{error && <Alert variant="error" description={error} />}</div>
           <div className="mt-6">
             <TextInput
               id="email"
@@ -105,7 +107,6 @@ export const SignUpPage: React.FC = () => {
                 onBlur={formik.handleBlur}
               />
             </div>
-
             <div className="sm:col-span-3">
               <TextInput
                 id="lastname"
