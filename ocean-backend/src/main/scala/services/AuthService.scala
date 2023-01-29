@@ -42,17 +42,6 @@ class AuthService(accountRepository: AccountRepository, jwtService: JwtService) 
       return Future.failed(EmailWrongFormatException())
     }
 
-    // Username validation
-    if (!Validator.isAlphanumeric(registerAccountRequest.username)) {
-      return Future.failed(UserWrongFormatException("Username must be alphanumeric"))
-    }
-    if (
-      !Validator.min(registerAccountRequest.username, 3)
-      || !Validator.max(registerAccountRequest.username, 20)
-    ) {
-      return Future.failed(UserWrongFormatException("Username must be between 3 and 20 characters long"))
-    }
-
     // Firstname validation
     if (!Validator.isAlphanumeric(registerAccountRequest.firstname)) {
       return Future.failed(FirstnameWrongFormatException("Firstname must be alphanumeric"))
@@ -83,15 +72,6 @@ class AuthService(accountRepository: AccountRepository, jwtService: JwtService) 
       return Future.failed(PasswordWrongFormatException("Password must be between 6 and 64 characters long"))
     }
 
-    // Validation with database queries should occur at the end
-    val accountWithUsername =
-      Await.result(
-        accountRepository.getAccountByEmail(registerAccountRequest.username),
-        Duration(5, TimeUnit.SECONDS)
-      )
-    if (accountWithUsername.isDefined) {
-      return Future.failed(AccountAlreadyExistsException("Account with the same username already exists"))
-    }
     val accountWithEmail =
       Await.result(accountRepository.getAccountByEmail(registerAccountRequest.email), Duration(5, TimeUnit.SECONDS))
     if (accountWithEmail.isDefined) {

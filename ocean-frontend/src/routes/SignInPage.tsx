@@ -1,21 +1,25 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useNavigate } from 'react-router-dom';
+import { useAuthentication } from '../hooks/useAuthentication';
+import { Routing } from '../lib/routing';
 import { Button } from '../components/Button/Button';
 import { SplitLayout } from '../components/SplitLayout/SplitLayout';
 import { TextInput } from '../components/TextInput/TextInput';
-import { useAuthentication } from '../hooks/useAuthentication';
+import { Alert } from '../components/Alert/Alert';
 
 export const signInSchema = Yup.object({
-  email: Yup.string().email('Invalid email address').required('Required'),
+  email: Yup.string().email('Invalid email address').required('Email is required.'),
   password: Yup.string()
     .min(6, 'Must be 8 or more characters')
     .max(20, 'Must be 20 characters or less')
-    .required('Required'),
+    .required('Password is required'),
 });
 
 export const SignInPage: React.FC = () => {
-  const { login, loading } = useAuthentication();
+  const navigate = useNavigate();
+  const { error, login, loading } = useAuthentication();
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -42,10 +46,14 @@ export const SignInPage: React.FC = () => {
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             or{' '}
-            <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <span
+              className="font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer"
+              onClick={() => navigate(Routing.getSignUpRoute())}
+            >
               create your account
-            </a>
+            </span>
           </p>
+          <div className="mt-6">{error && <Alert variant="error" description={error} />}</div>
           <div className="mt-6">
             <TextInput
               id="email"

@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { JwtUtils } from '../lib/jwtUtils';
+import { Routing } from '../lib/routing';
 import { SignInRequest } from '../openapi-generated';
 import { useRefreshTokenMutation, useSignInMutation } from './useQueries';
 
@@ -33,6 +34,7 @@ export const AuthenticationProvider: React.FC<{ disabledRefresh?: boolean }> = (
   disabledRefresh = false,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const signInMutation = useSignInMutation();
   const refreshTokenMutation = useRefreshTokenMutation();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | undefined>();
@@ -55,7 +57,9 @@ export const AuthenticationProvider: React.FC<{ disabledRefresh?: boolean }> = (
       runRefreshTokenStrategy(refreshToken).then(() => !disabledRefresh && startRefreshScheduler());
     } else {
       setIsLoggedIn(false);
-      navigate('/signin');
+      if (!Routing.isUnauthorizedPage(location.pathname)) {
+        navigate('/signin');
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

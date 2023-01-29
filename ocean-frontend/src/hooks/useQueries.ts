@@ -1,6 +1,12 @@
 import { useMutation, UseMutationOptions } from 'react-query';
 import api from '../lib/api';
-import { AuthResponse, RefreshTokenRequest, SignInRequest } from '../openapi-generated';
+import {
+  Account,
+  AuthResponse,
+  RefreshTokenRequest,
+  RegisterAccountRequest,
+  SignInRequest,
+} from '../openapi-generated';
 
 export const useSignInMutation = (
   options?: Omit<UseMutationOptions<AuthResponse, Error, SignInRequest>, 'mutationFn'>
@@ -15,5 +21,13 @@ export const useRefreshTokenMutation = (
 ) =>
   useMutation<AuthResponse, Error, RefreshTokenRequest>(async (refreshTokenRequest) => {
     const { data } = await api.Authentication.postApiAuthRefresh(refreshTokenRequest);
+    return data;
+  }, options);
+
+export const useSignUpMutation = (
+  options?: Omit<UseMutationOptions<Account, Error, RegisterAccountRequest>, 'mutationFn'>
+) =>
+  useMutation<Account, Error, RegisterAccountRequest>(async (registerAccountRequest) => {
+    const { data } = await api.Authentication.postApiAuthRegister(registerAccountRequest);
     return data;
   }, options);
