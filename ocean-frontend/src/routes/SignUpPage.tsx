@@ -36,7 +36,7 @@ export const SignUpPage: React.FC = () => {
     validationSchema: signUpSchema,
     onSubmit: (values) => {
       signUpMutation
-        .mutateAsync({ ...values, username: '' })
+        .mutateAsync({ ...values })
         .then((_account) => login({ email: values.email, password: values.password }));
       formik.setSubmitting(false);
     },

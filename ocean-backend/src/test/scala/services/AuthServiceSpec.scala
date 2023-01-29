@@ -56,7 +56,7 @@ class AuthServiceSpec extends AnyWordSpec with Matchers with MockitoSugar {
 
       when(accountRepositoryMock.addAccount(any()))
         .thenReturn(Future(mockAccount))
-      when(accountRepositoryMock.getAccountByEmail(ArgumentMatchers.eq(registerAccountRequest.username)))
+      when(accountRepositoryMock.getAccountByEmail(ArgumentMatchers.eq(registerAccountRequest.email)))
         .thenReturn(Future(None))
       when(
         accountRepositoryMock.getAccountByEmail(ArgumentMatchers.eq(registerAccountRequest.email))
@@ -71,10 +71,10 @@ class AuthServiceSpec extends AnyWordSpec with Matchers with MockitoSugar {
       val accountRepositoryMock = mock[AccountRepository]
       val authService = createAuthService(accountRepository = accountRepositoryMock)
       authService
-        .registerWithCredentials(getMockRegisterAccountRequest(username = "!"))
+        .registerWithCredentials(getMockRegisterAccountRequest(email = "!"))
         .failed
         .map { exception =>
-          exception shouldBe an[AuthService.UserWrongFormatException]
+          exception shouldBe an[AuthService.EmailWrongFormatException]
         }
     }
   }

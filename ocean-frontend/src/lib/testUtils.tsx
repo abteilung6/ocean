@@ -65,7 +65,6 @@ export function mockRegisterAccountRequest(
 ): RegisterAccountRequest {
   return {
     email: overrides?.email ?? 'bob@localhost.com',
-    username: overrides?.username ?? '',
     password: overrides?.password ?? '1234565ABC',
     firstname: overrides?.firstname ?? 'John',
     lastname: overrides?.lastname ?? 'Doe',

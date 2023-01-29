@@ -34,14 +34,13 @@ object TestMockUtils {
     )
 
   def getMockRegisterAccountRequest(
-    username: String = "username",
     password: String = "password",
     email: String = "alice@bob.com",
     firstname: String = "Firstname",
     lastname: String = "Lastname",
     company: String = "Company"
   ): RegisterAccountRequest =
-    RegisterAccountRequest(username, password, email, firstname, lastname, company)
+    RegisterAccountRequest(email, password, firstname, lastname, company)
 
   def getMockProject(
     projectId: Long = 0L,

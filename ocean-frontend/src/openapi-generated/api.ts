@@ -196,12 +196,6 @@ export interface MemberResponse {
     'accountId': number;
     /**
      * 
-     * @type {string}
-     * @memberof MemberResponse
-     */
-    'accountUsername': string;
-    /**
-     * 
      * @type {AuthenticatorType}
      * @memberof MemberResponse
      */
@@ -300,19 +294,13 @@ export interface RegisterAccountRequest {
      * @type {string}
      * @memberof RegisterAccountRequest
      */
-    'username': string;
+    'email': string;
     /**
      * 
      * @type {string}
      * @memberof RegisterAccountRequest
      */
     'password': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RegisterAccountRequest
-     */
-    'email': string;
     /**
      * 
      * @type {string}
