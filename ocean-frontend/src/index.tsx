@@ -8,6 +8,8 @@ import { AuthenticationProvider } from './hooks/useAuthentication';
 import { SignInPage } from './routes/SignInPage';
 import { DashboardPage } from './routes/DashboardPage';
 import './index.css';
+import { Routing } from './lib/routing';
+import { SignUpPage } from './routes/SignUpPage';
 
 export const browserRouter = createBrowserRouter([
   {
@@ -15,8 +17,12 @@ export const browserRouter = createBrowserRouter([
     element: <AuthenticationProvider />,
     children: [
       {
-        path: '/signin',
+        path: Routing.getSignInRoute(),
         element: <SignInPage />,
+      },
+      {
+        path: Routing.getSignUpRoute(),
+        element: <SignUpPage />,
       },
       {
         path: '/',
