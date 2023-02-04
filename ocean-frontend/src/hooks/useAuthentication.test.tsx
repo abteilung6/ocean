@@ -75,6 +75,16 @@ describe(AuthenticationProvider.name, () => {
     );
   };
 
+  const login = async () => {
+    jest.spyOn(api.Authentication, 'postApiAuthSignin').mockResolvedValue(
+      mockAxiosResponse({
+        data: { accessToken: 'accessToken', refreshToken: 'refreshToken' },
+      })
+    );
+    const loginButton = screen.getByRole('button', { name: 'Login' });
+    await user.click(loginButton);
+  };
+
   afterEach(() => {
     localStorage.clear();
   });
@@ -117,15 +127,13 @@ describe(AuthenticationProvider.name, () => {
     });
 
     test('should navigate to overview', async () => {
-      jest.spyOn(api.Authentication, 'postApiAuthSignin').mockResolvedValue(
-        mockAxiosResponse({
-          data: { accessToken: 'accessToken', refreshToken: 'refreshToken' },
-        })
-      );
-      const loginButton = screen.getByRole('button', { name: 'Login' });
-      await user.click(loginButton);
-
+      await login();
       expect(screen.getByTestId('virtual-route-id').textContent).toBe('/');
+    });
+
+    test('should render the navbar', async () => {
+      await login();
+      expect(screen.getByRole('navigation')).toHaveTextContent('Projects');
     });
 
     test('should be in logged in state', async () => {
@@ -152,15 +160,7 @@ describe(AuthenticationProvider.name, () => {
   describe('when logout action is successfully called', () => {
     beforeEach(async () => {
       customRender({});
-
-      // Reproduce login state
-      jest.spyOn(api.Authentication, 'postApiAuthSignin').mockResolvedValue(
-        mockAxiosResponse({
-          data: { accessToken: 'accessToken', refreshToken: 'refreshToken' },
-        })
-      );
-      const loginButton = screen.getByRole('button', { name: 'Login' });
-      await user.click(loginButton);
+      await login();
     });
 
     test('should navigate to signin route', async () => {
