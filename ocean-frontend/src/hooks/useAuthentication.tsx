@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Navbar } from '../components/Navbar/Navbar';
 import { JwtUtils } from '../lib/jwtUtils';
 import { Routing } from '../lib/routing';
 import { SignInRequest } from '../openapi-generated';
@@ -58,7 +59,7 @@ export const AuthenticationProvider: React.FC<{ disabledRefresh?: boolean }> = (
     } else {
       setIsLoggedIn(false);
       if (!Routing.isUnauthorizedPage(location.pathname)) {
-        navigate('/signin');
+        navigate(Routing.getSignInRoute());
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,7 +74,7 @@ export const AuthenticationProvider: React.FC<{ disabledRefresh?: boolean }> = (
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     setIsLoggedIn(false);
-    navigate('/signin');
+    navigate(Routing.getSignInRoute());
   }, [navigate, timer]);
 
   const runRefreshTokenStrategy = useCallback(
@@ -124,20 +125,25 @@ export const AuthenticationProvider: React.FC<{ disabledRefresh?: boolean }> = (
   );
 
   return (
-    <>
-      {/* all the other elements */}
-      <AuthenticationContext.Provider
-        value={{
-          isLoggedIn,
-          login,
-          logout,
-          loading: signInMutation.isLoading,
-          error: signInMutation.error?.message,
-        }}
-      >
-        <Outlet />
-      </AuthenticationContext.Provider>
-    </>
+    <AuthenticationContext.Provider
+      value={{
+        isLoggedIn,
+        login,
+        logout,
+        loading: signInMutation.isLoading,
+        error: signInMutation.error?.message,
+      }}
+    >
+      {isLoggedIn && (
+        <Navbar
+          paths={[{ name: 'Projects', route: Routing.getProjectsRoute() }]}
+          selectedRoute={location.pathname}
+          onClick={(path) => navigate(path)}
+        />
+      )}
+
+      <Outlet />
+    </AuthenticationContext.Provider>
   );
 };
 

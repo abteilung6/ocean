@@ -7,6 +7,10 @@ export class Routing {
     return '/signin';
   }
 
+  public static getProjectsRoute(): string {
+    return '/projects';
+  }
+
   /**
    * Pages that dont need to be redirected, when user is not authorized.
    */
