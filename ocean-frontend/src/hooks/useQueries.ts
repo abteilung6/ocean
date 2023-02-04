@@ -1,8 +1,9 @@
-import { useMutation, UseMutationOptions } from 'react-query';
+import { useMutation, UseMutationOptions, useQuery, UseQueryOptions } from 'react-query';
 import api from '../lib/api';
 import {
   Account,
   AuthResponse,
+  Project,
   RefreshTokenRequest,
   RegisterAccountRequest,
   SignInRequest,
@@ -31,3 +32,16 @@ export const useSignUpMutation = (
     const { data } = await api.Authentication.postApiAuthRegister(registerAccountRequest);
     return data;
   }, options);
+
+export const useProjectsQuery = (options?: UseQueryOptions<readonly Project[]>) => {
+  return useQuery<readonly Project[]>(
+    ['projects'],
+    async () => {
+      const { data } = await api.Project.getApiProjects();
+      return data;
+    },
+    {
+      ...options,
+    }
+  );
+};

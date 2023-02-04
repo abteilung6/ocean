@@ -3,13 +3,14 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { QueryClientProvider } from 'react-query';
 import reportWebVitals from './reportWebVitals';
-import { queryClient } from './lib/queryClient';
 import { AuthenticationProvider } from './hooks/useAuthentication';
+import { queryClient } from './lib/queryClient';
+import { Routing } from './lib/routing';
 import { SignInPage } from './routes/SignInPage';
 import { DashboardPage } from './routes/DashboardPage';
-import './index.css';
-import { Routing } from './lib/routing';
 import { SignUpPage } from './routes/SignUpPage';
+import { ProjectListPage } from './routes/ProjectListPage';
+import './index.css';
 
 export const browserRouter = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ export const browserRouter = createBrowserRouter([
       {
         path: '/',
         element: <DashboardPage />,
+      },
+      {
+        path: Routing.getProjectsRoute(),
+        element: <ProjectListPage />,
       },
     ],
   },

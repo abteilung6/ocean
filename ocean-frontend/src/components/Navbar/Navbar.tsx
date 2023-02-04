@@ -8,8 +8,6 @@ export interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ paths, selectedRoute, onClick }) => {
-  console.log(selectedRoute);
-
   return (
     <nav className="bg-white shadow-sm">
       <div className="mx-auto  px-4 sm:px-6 lg:px-8">

@@ -11,10 +11,26 @@ export const axiosPlatformInstance = axios.create({
   headers,
 });
 
+axiosPlatformInstance.interceptors.request.use((axiosRequestConfig) => {
+  const accessToken = localStorage.getItem('accessToken');
+  if (accessToken) {
+    if (axiosRequestConfig.headers?.set && typeof axiosRequestConfig.headers.set === 'function') {
+      axiosRequestConfig.headers.set('Authorization', `Bearer ${accessToken}`, true);
+    }
+  } else {
+    if (
+      axiosRequestConfig.headers?.delete &&
+      typeof axiosRequestConfig.headers.delete === 'function'
+    ) {
+      axiosRequestConfig.headers.delete('Authorization');
+    }
+  }
+  return axiosRequestConfig;
+});
+
 axiosPlatformInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    console.log(error);
     if (error.response && error.response.status >= 400 && error.response.status <= 500) {
       const axiosError = error as AxiosError<ResponseError>;
       return await Promise.reject(new Error(axiosError.response?.data.message));
