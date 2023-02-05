@@ -1,8 +1,8 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { createTestUtils, mockAxiosResponse } from '../lib/testUtils';
-import api from '../lib/api';
-import { ProjectListPage } from './ProjectListPage';
+import { createTestUtils, mockAxiosResponse } from '../../lib/testUtils';
+import api from '../../lib/api';
+import { ProjectListPage } from '.';
 
 describe(ProjectListPage.name, () => {
   const { render } = createTestUtils();

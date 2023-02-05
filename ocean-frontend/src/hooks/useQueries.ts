@@ -3,6 +3,7 @@ import api from '../lib/api';
 import {
   Account,
   AuthResponse,
+  CreateProjectRequest,
   Project,
   RefreshTokenRequest,
   RegisterAccountRequest,
@@ -33,6 +34,8 @@ export const useSignUpMutation = (
     return data;
   }, options);
 
+// Project
+
 export const useProjectsQuery = (options?: UseQueryOptions<readonly Project[]>) => {
   return useQuery<readonly Project[]>(
     ['projects'],
@@ -45,3 +48,11 @@ export const useProjectsQuery = (options?: UseQueryOptions<readonly Project[]>) 
     }
   );
 };
+
+export const useProjectCreateMutation = (
+  options?: Omit<UseMutationOptions<Project, Error, CreateProjectRequest>, 'mutationFn'>
+) =>
+  useMutation<Project, Error, CreateProjectRequest>(async (createProjectRequest) => {
+    const { data } = await api.Project.postApiProjects(createProjectRequest);
+    return data;
+  }, options);

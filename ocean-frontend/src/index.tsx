@@ -9,8 +9,9 @@ import { Routing } from './lib/routing';
 import { SignInPage } from './routes/SignInPage';
 import { DashboardPage } from './routes/DashboardPage';
 import { SignUpPage } from './routes/SignUpPage';
-import { ProjectListPage } from './routes/ProjectListPage';
+import { ProjectListPage } from './routes/projects';
 import './index.css';
+import { ProjectCreatePage } from './routes/projects/new';
 
 export const browserRouter = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ export const browserRouter = createBrowserRouter([
       {
         path: Routing.getProjectsRoute(),
         element: <ProjectListPage />,
+      },
+      {
+        path: Routing.getProjectCreateRoute(),
+        element: <ProjectCreatePage />,
       },
     ],
   },

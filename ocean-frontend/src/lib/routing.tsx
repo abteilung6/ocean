@@ -11,6 +11,10 @@ export class Routing {
     return '/projects';
   }
 
+  public static getProjectCreateRoute(): string {
+    return '/projects/new';
+  }
+
   /**
    * Pages that dont need to be redirected, when user is not authorized.
    */
