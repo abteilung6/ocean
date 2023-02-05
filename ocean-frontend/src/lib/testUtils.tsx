@@ -5,7 +5,13 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { queryClient } from './queryClient';
 import { AuthenticationProvider } from '../hooks/useAuthentication';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { Account, AuthenticatorType, RegisterAccountRequest } from '../openapi-generated';
+import {
+  Account,
+  AuthenticatorType,
+  CreateProjectRequest,
+  Project,
+  RegisterAccountRequest,
+} from '../openapi-generated';
 
 export function createTestUtils() {
   function _render(component: JSX.Element) {
@@ -83,5 +89,24 @@ export function mockAccount(): Account {
     authenticatorType: AuthenticatorType.Credentials,
     verified: true,
     passwordHash: '',
+  };
+}
+
+export function mockProject(overrides?: Partial<Project>): Project {
+  return {
+    projectId: overrides?.projectId ?? 1,
+    name: overrides?.name ?? 'project-1',
+    description: overrides?.description ?? 'A short description',
+    createdAt: overrides?.createdAt ?? Date.now().toString(),
+    ownerId: overrides?.ownerId ?? 1,
+  };
+}
+
+export function mockCreateProjectRequest(
+  overrides?: Partial<CreateProjectRequest>
+): CreateProjectRequest {
+  return {
+    name: overrides?.name ?? 'project-1',
+    description: overrides?.description ?? 'A short description',
   };
 }

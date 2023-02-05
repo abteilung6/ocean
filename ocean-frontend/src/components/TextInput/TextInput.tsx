@@ -42,14 +42,14 @@ export const TextInput: React.FC<TextInputProps> = ({
             'block w-full rounded-md shadow-sm',
             'disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-500',
             colors,
-          ].join('')}
+          ].join(' ')}
           value={value}
           disabled={disabled}
           {...props}
         />
       </div>
       {!isValid && validationError && (
-        <p className="mt-2 text-sm text-red-600" id="email-error">
+        <p className="mt-1 text-sm text-red-600" id="email-error">
           {validationError}
         </p>
       )}
