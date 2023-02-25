@@ -135,14 +135,20 @@ export const AuthenticationProvider: React.FC<{ disabledRefresh?: boolean }> = (
       }}
     >
       {isLoggedIn && (
-        <Navbar
-          paths={[{ name: 'Projects', route: Routing.getProjectsRoute() }]}
-          selectedRoute={location.pathname}
-          onClick={(path) => navigate(path)}
-        />
+        <>
+          <Navbar
+            paths={[{ name: 'Projects', route: Routing.getProjectsRoute() }]}
+            selectedRoute={location.pathname}
+            onClick={(path) => navigate(path)}
+          />
+          <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="px-4 py-8 sm:px-0">
+              <Outlet />
+            </div>
+          </div>
+        </>
       )}
-
-      <Outlet />
+      {!isLoggedIn && <Outlet />}
     </AuthenticationContext.Provider>
   );
 };

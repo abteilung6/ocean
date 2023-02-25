@@ -28,6 +28,10 @@ export function createTestUtils() {
             path: '/signin',
             element: component,
           },
+          {
+            path: '/projects',
+            element: component,
+          },
         ],
       },
     ]);
@@ -85,7 +89,7 @@ export function mockAccount(): Account {
     firstname: 'John',
     lastname: 'Doe',
     company: 'Bob Ltd',
-    createdAt: '',
+    createdAt: '2023-02-05T12:22:21.710296Z',
     authenticatorType: AuthenticatorType.Credentials,
     verified: true,
     passwordHash: '',
@@ -97,7 +101,7 @@ export function mockProject(overrides?: Partial<Project>): Project {
     projectId: overrides?.projectId ?? 1,
     name: overrides?.name ?? 'project-1',
     description: overrides?.description ?? 'A short description',
-    createdAt: overrides?.createdAt ?? Date.now().toString(),
+    createdAt: overrides?.createdAt ?? '2023-02-05T12:22:21.710296Z',
     ownerId: overrides?.ownerId ?? 1,
   };
 }

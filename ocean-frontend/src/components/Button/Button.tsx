@@ -25,7 +25,7 @@ export const Button = ({
     <button
       type="button"
       className={[
-        'inline-flex justify-center rounded-md border shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-75 cursor-pointer',
+        'inline-flex justify-center rounded-md border shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-75 cursor-pointer font-medium',
         sizeToStyles[size],
         variantToStyles[variant],
         fullWidthStyle,
